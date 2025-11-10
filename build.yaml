@@ -1,0 +1,12 @@
+targets:
+  $default:
+    builders:
+      flutter_gen_runner|flutter_gen:
+        options:
+          assets:
+            enabled: true
+          fonts:
+            enabled: true
+          colors:
+            enabled: true
+
