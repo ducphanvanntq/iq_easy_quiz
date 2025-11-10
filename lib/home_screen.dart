@@ -296,19 +296,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showDifficultyDialog(QuizCategory category) {
+    String? selectedDifficulty;
+    
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
             Container(
               width: 40,
               height: 4,
@@ -357,35 +367,112 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            _buildDifficultyOption(
-              title: 'Easy',
-              description: 'Perfect for beginners',
-              icon: PhosphorIcons.smiley(PhosphorIconsStyle.fill),
-              color: Colors.green,
-              difficulty: 'easy',
-              category: category,
+                const SizedBox(height: 24),
+                _buildDifficultyOption(
+                  title: 'Easy',
+                  description: 'Perfect for beginners',
+                  icon: PhosphorIcons.smiley(PhosphorIconsStyle.fill),
+                  color: Colors.green,
+                  difficulty: 'easy',
+                  isSelected: selectedDifficulty == 'easy',
+                  onTap: () {
+                    setState(() {
+                      selectedDifficulty = 'easy';
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildDifficultyOption(
+                  title: 'Medium',
+                  description: 'A good challenge',
+                  icon: PhosphorIcons.lightbulb(PhosphorIconsStyle.fill),
+                  color: Colors.orange,
+                  difficulty: 'medium',
+                  isSelected: selectedDifficulty == 'medium',
+                  onTap: () {
+                    setState(() {
+                      selectedDifficulty = 'medium';
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildDifficultyOption(
+                  title: 'Hard',
+                  description: 'For the experts',
+                  icon: PhosphorIcons.fire(PhosphorIconsStyle.fill),
+                  color: Colors.red,
+                  difficulty: 'hard',
+                  isSelected: selectedDifficulty == 'hard',
+                  onTap: () {
+                    setState(() {
+                      selectedDifficulty = 'hard';
+                    });
+                  },
+                ),
+                const SizedBox(height: 24),
+                if (selectedDifficulty != null)
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [primaryColor, secondaryColor],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryColor.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuizScreen(
+                              categoryId: category.id,
+                              categoryTitle: category.title,
+                              difficulty: selectedDifficulty!,
+                              categoryColor: category.color,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            PhosphorIcons.play(PhosphorIconsStyle.fill),
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Start Quiz',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(height: 12),
-            _buildDifficultyOption(
-              title: 'Medium',
-              description: 'A good challenge',
-              icon: PhosphorIcons.lightbulb(PhosphorIconsStyle.fill),
-              color: Colors.orange,
-              difficulty: 'medium',
-              category: category,
-            ),
-            const SizedBox(height: 12),
-            _buildDifficultyOption(
-              title: 'Hard',
-              description: 'For the experts',
-              icon: PhosphorIcons.fire(PhosphorIconsStyle.fill),
-              color: Colors.red,
-              difficulty: 'hard',
-              category: category,
-            ),
-            const SizedBox(height: 24),
-          ],
+          ),
         ),
       ),
     );
@@ -397,36 +484,24 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData icon,
     required Color color,
     required String difficulty,
-    required QuizCategory category,
+    required bool isSelected,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: () {
-        Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => QuizScreen(
-              categoryId: category.id,
-              categoryTitle: category.title,
-              difficulty: difficulty,
-              categoryColor: category.color,
-            ),
-          ),
-        );
-      },
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? color.withOpacity(0.1) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: color.withOpacity(0.3),
-            width: 2,
+            color: isSelected ? color : color.withOpacity(0.3),
+            width: isSelected ? 3 : 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.1),
-              blurRadius: 8,
+              color: color.withOpacity(isSelected ? 0.2 : 0.1),
+              blurRadius: isSelected ? 12 : 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -468,11 +543,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            Icon(
-              PhosphorIcons.caretRight(PhosphorIconsStyle.bold),
-              color: color,
-              size: 24,
-            ),
+            if (isSelected)
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  PhosphorIcons.check(PhosphorIconsStyle.bold),
+                  color: Colors.white,
+                  size: 20,
+                ),
+              )
+            else
+              Icon(
+                PhosphorIcons.caretRight(PhosphorIconsStyle.bold),
+                color: color,
+                size: 24,
+              ),
           ],
         ),
       ),

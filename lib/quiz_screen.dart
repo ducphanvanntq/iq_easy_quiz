@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:dio/dio.dart';
 import 'dart:async';
+import 'models/question_model.dart';
+import 'models/quiz_history.dart';
+import 'services/quiz_history_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final String categoryId;
@@ -32,36 +36,58 @@ class _QuizScreenState extends State<QuizScreen> {
   bool isAnswered = false;
   Timer? _timer;
   int timeLeft = 30;
-
-  // Sample questions - sẽ thay bằng API call
-  final List<Map<String, dynamic>> questions = [
-    {
-      'question': 'What is the capital of France?',
-      'answers': ['London', 'Berlin', 'Paris', 'Madrid'],
-      'correctAnswer': 2,
-    },
-    {
-      'question': 'Which planet is known as the Red Planet?',
-      'answers': ['Venus', 'Mars', 'Jupiter', 'Saturn'],
-      'correctAnswer': 1,
-    },
-    {
-      'question': 'What is 2 + 2?',
-      'answers': ['3', '4', '5', '6'],
-      'correctAnswer': 1,
-    },
-  ];
+  
+  List<Question> questions = [];
+  List<List<String>> allShuffledAnswers = [];
+  bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
+    _loadQuestions();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadQuestions() async {
+    try {
+      final dio = Dio();
+      final category = widget.categoryId == 'any' ? '' : '&category=${widget.categoryId}';
+      final url = 'https://opentdb.com/api.php?amount=10$category&difficulty=${widget.difficulty}';
+      
+      final response = await dio.get(url);
+      
+      if (response.statusCode == 200) {
+        final quizResponse = QuizResponse.fromJson(response.data);
+        
+        if (quizResponse.responseCode == 0 && quizResponse.results.isNotEmpty) {
+          setState(() {
+            questions = quizResponse.results;
+            // Shuffle answers for each question
+            for (var question in questions) {
+              allShuffledAnswers.add(question.getAllAnswers());
+            }
+            isLoading = false;
+          });
+          _startTimer();
+        } else {
+          setState(() {
+            errorMessage = 'No questions available for this category';
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Failed to load questions: $e';
+        isLoading = false;
+      });
+    }
   }
 
   void _startTimer() {
@@ -81,10 +107,14 @@ class _QuizScreenState extends State<QuizScreen> {
   void _selectAnswer(int index) {
     if (isAnswered) return;
 
+    final shuffledAnswers = allShuffledAnswers[currentQuestionIndex];
+    final selectedAnswer = shuffledAnswers[index];
+    final correctAnswer = questions[currentQuestionIndex].correctAnswer;
+
     setState(() {
       selectedAnswerIndex = index;
       isAnswered = true;
-      if (index == questions[currentQuestionIndex]['correctAnswer']) {
+      if (selectedAnswer == correctAnswer) {
         score++;
       }
     });
@@ -105,8 +135,24 @@ class _QuizScreenState extends State<QuizScreen> {
       });
       _startTimer();
     } else {
+      _saveHistory();
       _showResultDialog();
     }
+  }
+
+  Future<void> _saveHistory() async {
+    final history = QuizHistory(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      categoryId: widget.categoryId,
+      categoryTitle: widget.categoryTitle,
+      difficulty: widget.difficulty,
+      totalQuestions: questions.length,
+      correctAnswers: score,
+      score: ((score / questions.length) * 100).toInt(),
+      completedAt: DateTime.now(),
+    );
+    
+    await QuizHistoryService.saveHistory(history);
   }
 
   void _showResultDialog() {
@@ -196,7 +242,114 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          backgroundColor: widget.categoryColor,
+          title: Text(
+            widget.categoryTitle,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: primaryColor,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Loading questions...',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (errorMessage != null) {
+      return Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          backgroundColor: widget.categoryColor,
+          title: Text(
+            widget.categoryTitle,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  PhosphorIcons.warning(PhosphorIconsStyle.fill),
+                  size: 64,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Error',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    'Go Back',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final question = questions[currentQuestionIndex];
+    final shuffledAnswers = allShuffledAnswers[currentQuestionIndex];
+    final correctAnswerIndex = shuffledAnswers.indexOf(question.correctAnswer);
     final progress = (currentQuestionIndex + 1) / questions.length;
 
     return Scaffold(
@@ -351,7 +504,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       ],
                     ),
                     child: Text(
-                      question['question'],
+                      question.question,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -362,11 +515,11 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                   const SizedBox(height: 24),
                   ...List.generate(
-                    question['answers'].length,
+                    shuffledAnswers.length,
                     (index) => _buildAnswerOption(
-                      question['answers'][index],
+                      shuffledAnswers[index],
                       index,
-                      question['correctAnswer'],
+                      correctAnswerIndex,
                     ),
                   ),
                 ],
@@ -481,4 +634,3 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 }
-
