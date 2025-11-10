@@ -3,6 +3,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'welcome_screen.dart';
+import 'main_screen.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -56,7 +57,7 @@ class _AppInitializerState extends State<AppInitializer> {
         );
       } else {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'IQ Easy Quiz')),
+          MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       }
     }

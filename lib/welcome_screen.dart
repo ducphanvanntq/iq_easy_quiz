@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'main_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -52,75 +53,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) {
-              return Scaffold(
-                backgroundColor: Colors.white,
-                body: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        primaryColor.withOpacity(0.1),
-                        secondaryColor.withOpacity(0.1),
-                      ],
-                    ),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: primaryColor.withOpacity(0.3),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
-                            size: 80,
-                            color: Colors.green,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Welcome, ${_nameController.text}!',
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Age: ${_ageController.text}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          "Let's start your quiz journey! 🚀",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
+            builder: (context) => const MainScreen(),
           ),
         );
       }
