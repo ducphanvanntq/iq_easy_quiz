@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -214,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 180,
+            expandedHeight: 140,
             floating: false,
             pinned: true,
             backgroundColor: primaryColor,
@@ -294,21 +295,193 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryCard(QuizCategory category) {
+  void _showDifficultyDialog(QuizCategory category) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: category.color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    category.icon,
+                    color: category.color,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category.title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+                      Text(
+                        'Select difficulty level',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _buildDifficultyOption(
+              title: 'Easy',
+              description: 'Perfect for beginners',
+              icon: PhosphorIcons.smiley(PhosphorIconsStyle.fill),
+              color: Colors.green,
+              difficulty: 'easy',
+              category: category,
+            ),
+            const SizedBox(height: 12),
+            _buildDifficultyOption(
+              title: 'Medium',
+              description: 'A good challenge',
+              icon: PhosphorIcons.lightbulb(PhosphorIconsStyle.fill),
+              color: Colors.orange,
+              difficulty: 'medium',
+              category: category,
+            ),
+            const SizedBox(height: 12),
+            _buildDifficultyOption(
+              title: 'Hard',
+              description: 'For the experts',
+              icon: PhosphorIcons.fire(PhosphorIconsStyle.fill),
+              color: Colors.red,
+              difficulty: 'hard',
+              category: category,
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDifficultyOption({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required String difficulty,
+    required QuizCategory category,
+  }) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${category.title} - Coming soon!',
-              style: GoogleFonts.poppins(),
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QuizScreen(
+              categoryId: category.id,
+              categoryTitle: category.title,
+              difficulty: difficulty,
+              categoryColor: category.color,
             ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: category.color,
-            duration: const Duration(seconds: 2),
           ),
         );
       },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withOpacity(0.3),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                  Text(
+                    description,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              PhosphorIcons.caretRight(PhosphorIconsStyle.bold),
+              color: color,
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(QuizCategory category) {
+    return GestureDetector(
+      onTap: () => _showDifficultyDialog(category),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

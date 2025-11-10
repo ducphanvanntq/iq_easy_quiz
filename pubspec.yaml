@@ -22,6 +22,7 @@ dependencies:
   phosphor_flutter: ^2.0.0
   flutter_tabler_icons: ^1.0.0
   bootstrap_icons: ^1.11.5
+  dio: ^5.9.0
 
 dev_dependencies:
   flutter_test:

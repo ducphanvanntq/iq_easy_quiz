@@ -18,6 +18,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   final _ageController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  String selectedGender = 'Male';
 
   static const Color primaryColor = Color(0xFF06A8E8);
   static const Color secondaryColor = Color(0xFF00C9D7);
@@ -48,6 +49,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('userName', _nameController.text.trim());
       await prefs.setInt('userAge', int.parse(_ageController.text.trim()));
+      await prefs.setString('userGender', selectedGender);
       await prefs.setBool('isFirstTime', false);
 
       if (mounted) {
@@ -212,6 +214,116 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 }
                                 return null;
                               },
+                            ),
+                            const SizedBox(height: 20),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4, bottom: 12),
+                                  child: Text(
+                                    'Gender',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  padding: const EdgeInsets.all(4),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              selectedGender = 'Male';
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            decoration: BoxDecoration(
+                                              color: selectedGender == 'Male'
+                                                  ? primaryColor
+                                                  : Colors.transparent,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  PhosphorIcons.genderMale(PhosphorIconsStyle.bold),
+                                                  color: selectedGender == 'Male'
+                                                      ? Colors.white
+                                                      : Colors.grey.shade600,
+                                                  size: 20,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Male',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: selectedGender == 'Male'
+                                                        ? Colors.white
+                                                        : Colors.grey.shade600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              selectedGender = 'Female';
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            decoration: BoxDecoration(
+                                              color: selectedGender == 'Female'
+                                                  ? secondaryColor
+                                                  : Colors.transparent,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  PhosphorIcons.genderFemale(PhosphorIconsStyle.bold),
+                                                  color: selectedGender == 'Female'
+                                                      ? Colors.white
+                                                      : Colors.grey.shade600,
+                                                  size: 20,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Female',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: selectedGender == 'Female'
+                                                        ? Colors.white
+                                                        : Colors.grey.shade600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 20),
                             DropdownButtonFormField<int>(
