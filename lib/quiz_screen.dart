@@ -94,39 +94,69 @@ class _QuizScreenState extends State<QuizScreen> {
     timeLeft = 30;
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       if (timeLeft > 0) {
         setState(() {
           timeLeft--;
         });
       } else {
+        timer.cancel();
         _nextQuestion();
       }
     });
   }
 
   void _selectAnswer(int index) {
+    // Prevent multiple rapid clicks
     if (isAnswered) return;
-
+    
+    // Bounds checking
+    if (currentQuestionIndex < 0 || 
+        currentQuestionIndex >= questions.length ||
+        currentQuestionIndex >= allShuffledAnswers.length) {
+      return;
+    }
+    
     final shuffledAnswers = allShuffledAnswers[currentQuestionIndex];
+    if (index < 0 || index >= shuffledAnswers.length) {
+      return;
+    }
+
     final selectedAnswer = shuffledAnswers[index];
     final correctAnswer = questions[currentQuestionIndex].correctAnswer;
+
+    // Cancel timer first to prevent race condition
+    _timer?.cancel();
+
+    if (!mounted) return;
 
     setState(() {
       selectedAnswerIndex = index;
       isAnswered = true;
-      if (selectedAnswer == correctAnswer) {
+      // Normalize strings for comparison (trim whitespace, case-insensitive)
+      final normalizedSelected = selectedAnswer.trim().toLowerCase();
+      final normalizedCorrect = correctAnswer.trim().toLowerCase();
+      if (normalizedSelected == normalizedCorrect) {
         score++;
       }
     });
 
-    _timer?.cancel();
-
     Future.delayed(const Duration(seconds: 2), () {
-      _nextQuestion();
+      if (mounted) {
+        _nextQuestion();
+      }
     });
   }
 
   void _nextQuestion() {
+    if (!mounted) return;
+    
+    // Ensure we have valid questions
+    if (questions.isEmpty) return;
+    
     if (currentQuestionIndex < questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
@@ -135,8 +165,12 @@ class _QuizScreenState extends State<QuizScreen> {
       });
       _startTimer();
     } else {
-      _saveHistory();
-      _showResultDialog();
+      _timer?.cancel();
+      _saveHistory().then((_) {
+        if (mounted) {
+          _showResultDialog();
+        }
+      });
     }
   }
 
@@ -347,10 +381,74 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
+    // Safety check before accessing questions
+    if (currentQuestionIndex < 0 || 
+        currentQuestionIndex >= questions.length ||
+        currentQuestionIndex >= allShuffledAnswers.length) {
+      return Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          backgroundColor: widget.categoryColor,
+          title: Text(
+            widget.categoryTitle,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        body: const Center(
+          child: Text('Error: Invalid question index'),
+        ),
+      );
+    }
+
     final question = questions[currentQuestionIndex];
     final shuffledAnswers = allShuffledAnswers[currentQuestionIndex];
+    
+    if (shuffledAnswers.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          backgroundColor: widget.categoryColor,
+          title: Text(
+            widget.categoryTitle,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        body: const Center(
+          child: Text('Error: No answers available'),
+        ),
+      );
+    }
+    
     final correctAnswerIndex = shuffledAnswers.indexOf(question.correctAnswer);
-    final progress = (currentQuestionIndex + 1) / questions.length;
+    if (correctAnswerIndex == -1) {
+      // This shouldn't happen, but handle it gracefully
+      return Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          backgroundColor: widget.categoryColor,
+          title: Text(
+            widget.categoryTitle,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        body: const Center(
+          child: Text('Error: Correct answer not found'),
+        ),
+      );
+    }
+    
+    final progress = questions.isEmpty 
+        ? 0.0 
+        : (currentQuestionIndex + 1) / questions.length;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
