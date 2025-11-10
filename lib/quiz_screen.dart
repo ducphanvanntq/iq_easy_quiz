@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -37,17 +38,76 @@ class _QuizScreenState extends State<QuizScreen> {
 
   int currentQuestionIndex = 0;
   final PageController _pageController = PageController();
+  
+  // Timer variables
+  static const int quizDurationInSeconds = 600; // 10 minutes
+  int remainingSeconds = quizDurationInSeconds;
+  bool isTimerRunning = false;
+  late final Stream<int> _timerStream;
 
   @override
   void initState() {
     super.initState();
     _loadQuestions();
+    _initTimer();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    isTimerRunning = false;
     super.dispose();
+  }
+  
+  void _initTimer() {
+    _timerStream = Stream.periodic(const Duration(seconds: 1), (count) {
+      return quizDurationInSeconds - count - 1;
+    }).takeWhile((seconds) => seconds >= 0 && isTimerRunning);
+  }
+  
+  void _startTimer() {
+    setState(() {
+      isTimerRunning = true;
+    });
+    
+    _timerStream.listen(
+      (seconds) {
+        if (mounted) {
+          setState(() {
+            remainingSeconds = seconds;
+          });
+        }
+      },
+      onDone: () {
+        if (mounted && isTimerRunning) {
+          _handleTimeUp();
+        }
+      },
+    );
+  }
+  
+  void _handleTimeUp() {
+    setState(() {
+      isTimerRunning = false;
+    });
+    
+    // Auto-submit quiz when time is up
+    final score = QuizService.calculateScore(
+      questions: questions,
+      userAnswers: userAnswers,
+    );
+    
+    _saveHistory(score).then((_) {
+      if (mounted) {
+        _showTimeUpDialog(score);
+      }
+    });
+  }
+  
+  String _formatTime(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
   Future<void> _loadQuestions() async {
@@ -66,6 +126,9 @@ class _QuizScreenState extends State<QuizScreen> {
         }
         isLoading = false;
       });
+      
+      // Start timer after questions are loaded
+      _startTimer();
     } catch (e) {
       setState(() {
         errorMessage = e.toString();
@@ -104,6 +167,11 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _submitQuiz() {
+    // Stop the timer
+    setState(() {
+      isTimerRunning = false;
+    });
+    
     // Check if user has answered all questions
     if (!QuizService.hasAnsweredAll(
       totalQuestions: questions.length,
@@ -194,6 +262,9 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
           ElevatedButton(
             onPressed: () {
+              setState(() {
+                isTimerRunning = false;
+              });
               Navigator.pop(context);
               final score = QuizService.calculateScore(
                 questions: questions,
@@ -310,6 +381,104 @@ class _QuizScreenState extends State<QuizScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  'Back to Home',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  void _showTimeUpDialog(int score) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.all(32),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.orange.shade400, Colors.red.shade400],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                PhosphorIcons.clock(PhosphorIconsStyle.fill),
+                size: 60,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Time\'s Up!',
+              style: GoogleFonts.poppins(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Quiz automatically submitted',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Your Score',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$score / ${questions.length}',
+              style: GoogleFonts.poppins(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: Colors.orange.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${((score / questions.length) * 100).toInt()}%',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange.shade600,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -465,6 +634,9 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      setState(() {
+                        isTimerRunning = false;
+                      });
                       Navigator.pop(context);
                       Navigator.pop(context);
                     },
@@ -478,12 +650,52 @@ class _QuizScreenState extends State<QuizScreen> {
             );
           },
         ),
-        title: Text(
-          widget.categoryTitle,
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.categoryTitle,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: remainingSeconds <= 60 
+                    ? Colors.red.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: remainingSeconds <= 60 
+                      ? Colors.red.shade200
+                      : Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    PhosphorIcons.timer(PhosphorIconsStyle.fill),
+                    color: remainingSeconds <= 60 ? Colors.red.shade100 : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _formatTime(remainingSeconds),
+                    style: GoogleFonts.poppins(
+                      color: remainingSeconds <= 60 ? Colors.red.shade100 : Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       body: Column(
@@ -519,75 +731,38 @@ class _QuizScreenState extends State<QuizScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Progress info
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
+                    // Progress info - Answered questions counter
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
+                            color: Colors.white,
+                            size: 18,
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1,
+                          const SizedBox(width: 8),
+                          Text(
+                            '${userAnswers.length}/${questions.length}',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                PhosphorIcons.listNumbers(PhosphorIconsStyle.bold),
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${currentQuestionIndex + 1}/${questions.length}',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${userAnswers.length}/${questions.length}',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     // Submit button
                     Container(
