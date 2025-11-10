@@ -31,60 +31,179 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<QuizCategory> categories = [
     QuizCategory(
-      title: 'Mathematics',
-      description: 'Test your math skills',
-      icon: PhosphorIcons.mathOperations(PhosphorIconsStyle.fill),
+      id: 'any',
+      title: 'Any Category',
+      description: 'Random questions',
+      icon: PhosphorIcons.shuffleAngular(PhosphorIconsStyle.fill),
       color: const Color(0xFF6C5CE7),
-      questionCount: 25,
     ),
     QuizCategory(
-      title: 'Science',
-      description: 'Explore scientific knowledge',
-      icon: PhosphorIcons.atom(PhosphorIconsStyle.fill),
+      id: '9',
+      title: 'General Knowledge',
+      description: 'Test your general knowledge',
+      icon: PhosphorIcons.brain(PhosphorIconsStyle.fill),
       color: const Color(0xFF00B894),
-      questionCount: 30,
     ),
     QuizCategory(
-      title: 'History',
-      description: 'Journey through time',
-      icon: PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.fill),
-      color: const Color(0xFFE17055),
-      questionCount: 20,
-    ),
-    QuizCategory(
-      title: 'Geography',
-      description: 'Discover the world',
-      icon: PhosphorIcons.globe(PhosphorIconsStyle.fill),
-      color: const Color(0xFF0984E3),
-      questionCount: 28,
-    ),
-    QuizCategory(
-      title: 'Literature',
-      description: 'Books and authors',
+      id: '10',
+      title: 'Books',
+      description: 'Entertainment: Books',
       icon: PhosphorIcons.book(PhosphorIconsStyle.fill),
+      color: const Color(0xFFE17055),
+    ),
+    QuizCategory(
+      id: '11',
+      title: 'Film',
+      description: 'Entertainment: Film',
+      icon: PhosphorIcons.filmSlate(PhosphorIconsStyle.fill),
+      color: const Color(0xFF0984E3),
+    ),
+    QuizCategory(
+      id: '12',
+      title: 'Music',
+      description: 'Entertainment: Music',
+      icon: PhosphorIcons.musicNotes(PhosphorIconsStyle.fill),
       color: const Color(0xFFD63031),
-      questionCount: 22,
     ),
     QuizCategory(
-      title: 'Technology',
-      description: 'Digital world quiz',
-      icon: PhosphorIcons.cpu(PhosphorIconsStyle.fill),
+      id: '13',
+      title: 'Musicals & Theatres',
+      description: 'Entertainment',
+      icon: PhosphorIcons.maskHappy(PhosphorIconsStyle.fill),
       color: const Color(0xFF00CEC9),
-      questionCount: 35,
     ),
     QuizCategory(
+      id: '14',
+      title: 'Television',
+      description: 'Entertainment: TV',
+      icon: PhosphorIcons.television(PhosphorIconsStyle.fill),
+      color: const Color(0xFFFD79A8),
+    ),
+    QuizCategory(
+      id: '15',
+      title: 'Video Games',
+      description: 'Entertainment: Gaming',
+      icon: PhosphorIcons.gameController(PhosphorIconsStyle.fill),
+      color: const Color(0xFFFDCB6E),
+    ),
+    QuizCategory(
+      id: '16',
+      title: 'Board Games',
+      description: 'Entertainment',
+      icon: PhosphorIcons.diceFive(PhosphorIconsStyle.fill),
+      color: const Color(0xFFA29BFE),
+    ),
+    QuizCategory(
+      id: '17',
+      title: 'Science & Nature',
+      description: 'Natural sciences',
+      icon: PhosphorIcons.atom(PhosphorIconsStyle.fill),
+      color: const Color(0xFF55EFC4),
+    ),
+    QuizCategory(
+      id: '18',
+      title: 'Computers',
+      description: 'Science: Computers',
+      icon: PhosphorIcons.desktop(PhosphorIconsStyle.fill),
+      color: const Color(0xFF74B9FF),
+    ),
+    QuizCategory(
+      id: '19',
+      title: 'Mathematics',
+      description: 'Science: Mathematics',
+      icon: PhosphorIcons.mathOperations(PhosphorIconsStyle.fill),
+      color: const Color(0xFFFF7675),
+    ),
+    QuizCategory(
+      id: '20',
+      title: 'Mythology',
+      description: 'Ancient myths & legends',
+      icon: PhosphorIcons.lightning(PhosphorIconsStyle.fill),
+      color: const Color(0xFFFAB1A0),
+    ),
+    QuizCategory(
+      id: '21',
       title: 'Sports',
       description: 'Athletic knowledge',
       icon: PhosphorIcons.soccerBall(PhosphorIconsStyle.fill),
-      color: const Color(0xFFFD79A8),
-      questionCount: 18,
+      color: const Color(0xFF81ECEC),
     ),
     QuizCategory(
-      title: 'Music',
-      description: 'Musical genius test',
-      icon: PhosphorIcons.musicNotes(PhosphorIconsStyle.fill),
+      id: '22',
+      title: 'Geography',
+      description: 'Discover the world',
+      icon: PhosphorIcons.globe(PhosphorIconsStyle.fill),
+      color: const Color(0xFFDFE6E9),
+    ),
+    QuizCategory(
+      id: '23',
+      title: 'History',
+      description: 'Journey through time',
+      icon: PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.fill),
+      color: const Color(0xFFFF6348),
+    ),
+    QuizCategory(
+      id: '24',
+      title: 'Politics',
+      description: 'Political knowledge',
+      icon: PhosphorIcons.gavel(PhosphorIconsStyle.fill),
+      color: const Color(0xFF2D3436),
+    ),
+    QuizCategory(
+      id: '25',
+      title: 'Art',
+      description: 'Artistic knowledge',
+      icon: PhosphorIcons.palette(PhosphorIconsStyle.fill),
+      color: const Color(0xFFE17055),
+    ),
+    QuizCategory(
+      id: '26',
+      title: 'Celebrities',
+      description: 'Famous people',
+      icon: PhosphorIcons.star(PhosphorIconsStyle.fill),
       color: const Color(0xFFFDCB6E),
-      questionCount: 24,
+    ),
+    QuizCategory(
+      id: '27',
+      title: 'Animals',
+      description: 'Wildlife & pets',
+      icon: PhosphorIcons.dog(PhosphorIconsStyle.fill),
+      color: const Color(0xFF00B894),
+    ),
+    QuizCategory(
+      id: '28',
+      title: 'Vehicles',
+      description: 'Cars, planes & more',
+      icon: PhosphorIcons.car(PhosphorIconsStyle.fill),
+      color: const Color(0xFF636E72),
+    ),
+    QuizCategory(
+      id: '29',
+      title: 'Comics',
+      description: 'Entertainment: Comics',
+      icon: PhosphorIcons.bookOpen(PhosphorIconsStyle.fill),
+      color: const Color(0xFFFF7675),
+    ),
+    QuizCategory(
+      id: '30',
+      title: 'Gadgets',
+      description: 'Science: Gadgets',
+      icon: PhosphorIcons.cpu(PhosphorIconsStyle.fill),
+      color: const Color(0xFF74B9FF),
+    ),
+    QuizCategory(
+      id: '31',
+      title: 'Anime & Manga',
+      description: 'Japanese entertainment',
+      icon: Ionicons.sparkles,
+      color: const Color(0xFFFD79A8),
+    ),
+    QuizCategory(
+      id: '32',
+      title: 'Cartoons & Animations',
+      description: 'Animated entertainment',
+      icon: PhosphorIcons.smiley(PhosphorIconsStyle.fill),
+      color: const Color(0xFFA29BFE),
     ),
   ];
 
@@ -95,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 180,
             floating: false,
             pinned: true,
             backgroundColor: primaryColor,
@@ -123,21 +242,24 @@ class _HomeScreenState extends State<HomeScreen> {
                               size: 28,
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              'Hello, $userName!',
-                              style: GoogleFonts.poppins(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            Expanded(
+                              child: Text(
+                                'Hello, $userName!',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Choose a category to start',
+                          'Choose a category to start your quiz',
                           style: GoogleFonts.poppins(
-                            fontSize: 16,
+                            fontSize: 15,
                             color: Colors.white.withOpacity(0.9),
                             fontWeight: FontWeight.w400,
                           ),
@@ -154,9 +276,9 @@ class _HomeScreenState extends State<HomeScreen> {
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.85,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+                childAspectRatio: 0.9,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -177,21 +299,25 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${category.title} - Coming soon!'),
+            content: Text(
+              '${category.title} - Coming soon!',
+              style: GoogleFonts.poppins(),
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: category.color,
+            duration: const Duration(seconds: 2),
           ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: category.color.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: category.color.withOpacity(0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -199,60 +325,44 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: category.color.withOpacity(0.1),
+                color: category.color.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 category.icon,
-                size: 48,
+                size: 40,
                 color: category.color,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              category.title,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                category.title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              category.description,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: category.color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Ionicons.help_circle,
-                    size: 14,
-                    color: category.color,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${category.questionCount} questions',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: category.color,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                category.description,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  color: Colors.grey.shade500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -263,18 +373,17 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class QuizCategory {
+  final String id;
   final String title;
   final String description;
   final IconData icon;
   final Color color;
-  final int questionCount;
 
   QuizCategory({
+    required this.id,
     required this.title,
     required this.description,
     required this.icon,
     required this.color,
-    required this.questionCount,
   });
 }
-

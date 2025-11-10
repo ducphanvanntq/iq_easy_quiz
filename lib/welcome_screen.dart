@@ -86,36 +86,36 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.15),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: Colors.white.withOpacity(0.3),
-                            width: 3,
+                            width: 2,
                           ),
                         ),
                         child: Icon(
                           PhosphorIcons.brain(PhosphorIconsStyle.fill),
-                          size: 80,
+                          size: 50,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 16),
                       Text(
                         'Welcome to',
                         style: GoogleFonts.poppins(
-                          fontSize: 20,
+                          fontSize: 16,
                           color: Colors.white.withOpacity(0.9),
                           fontWeight: FontWeight.w300,
                           letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Text(
                         'IQ Easy Quiz',
                         style: GoogleFonts.poppins(
-                          fontSize: 42,
+                          fontSize: 32,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.5,
@@ -128,7 +128,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                           ],
                         ),
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 24),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -214,15 +214,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                               },
                             ),
                             const SizedBox(height: 20),
-                            TextFormField(
-                              controller: _ageController,
-                              style: GoogleFonts.poppins(fontSize: 16),
+                            DropdownButtonFormField<int>(
+                              value: null,
+                              style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
                               decoration: InputDecoration(
                                 labelText: 'Your Age',
                                 labelStyle: GoogleFonts.poppins(
                                   color: primaryColor.withOpacity(0.7),
                                 ),
-                                hintText: 'Enter your age',
+                                hintText: 'Select your age',
                                 hintStyle: GoogleFonts.poppins(
                                   color: Colors.grey.shade400,
                                 ),
@@ -253,17 +253,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 filled: true,
                                 fillColor: secondaryColor.withOpacity(0.05),
                               ),
-                              keyboardType: TextInputType.number,
+                              items: List.generate(55, (index) => index + 6)
+                                  .map((age) => DropdownMenuItem<int>(
+                                        value: age,
+                                        child: Text('$age years old'),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  _ageController.text = value.toString();
+                                }
+                              },
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your age';
-                                }
-                                final age = int.tryParse(value.trim());
-                                if (age == null) {
-                                  return 'Please enter a valid number';
-                                }
-                                if (age < 1 || age > 120) {
-                                  return 'Please enter a valid age (1-120)';
+                                if (value == null) {
+                                  return 'Please select your age';
                                 }
                                 return null;
                               },
