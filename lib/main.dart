@@ -4,10 +4,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'welcome_screen.dart';
 import 'main_screen.dart';
+import 'database/database.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  // Initialize Isar database
+  try {
+    await IsarDatabase.instance;
+    debugPrint('✅ Isar database initialized successfully');
+  } catch (e) {
+    debugPrint('❌ Failed to initialize database: $e');
+  }
 
   runApp(const MyApp());
 }
