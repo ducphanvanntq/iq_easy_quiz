@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:dio/dio.dart';
-import 'dart:async';
 import 'models/question_model.dart';
 import 'models/quiz_history.dart';
+import 'services/quiz_service.dart';
 import 'services/quiz_history_service.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -30,17 +29,14 @@ class _QuizScreenState extends State<QuizScreen> {
   static const Color primaryColor = Color(0xFF06A8E8);
   static const Color secondaryColor = Color(0xFF00C9D7);
 
-  int currentQuestionIndex = 0;
-  int score = 0;
-  int? selectedAnswerIndex;
-  bool isAnswered = false;
-  Timer? _timer;
-  int timeLeft = 30;
-  
   List<Question> questions = [];
   List<List<String>> allShuffledAnswers = [];
+  Map<int, String> userAnswers = {}; // questionIndex -> selectedAnswer
   bool isLoading = true;
   String? errorMessage;
+
+  int currentQuestionIndex = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -50,131 +46,185 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
   Future<void> _loadQuestions() async {
     try {
-      final dio = Dio();
-      final category = widget.categoryId == 'any' ? '' : '&category=${widget.categoryId}';
-      final url = 'https://opentdb.com/api.php?amount=10$category&difficulty=${widget.difficulty}';
-      
-      final response = await dio.get(url);
-      
-      if (response.statusCode == 200) {
-        final quizResponse = QuizResponse.fromJson(response.data);
-        
-        if (quizResponse.responseCode == 0 && quizResponse.results.isNotEmpty) {
-          setState(() {
-            questions = quizResponse.results;
-            // Shuffle answers for each question
-            for (var question in questions) {
-              allShuffledAnswers.add(question.getAllAnswers());
-            }
-            isLoading = false;
-          });
-          _startTimer();
-        } else {
-          setState(() {
-            errorMessage = 'No questions available for this category';
-            isLoading = false;
-          });
+      final loadedQuestions = await QuizService.loadQuestions(
+        categoryId: widget.categoryId,
+        difficulty: widget.difficulty,
+        amount: 10,
+      );
+
+      setState(() {
+        questions = loadedQuestions;
+        // Shuffle answers for each question
+        for (var question in questions) {
+          allShuffledAnswers.add(QuizService.shuffleAnswers(question));
         }
-      }
+        isLoading = false;
+      });
     } catch (e) {
       setState(() {
-        errorMessage = 'Failed to load questions: $e';
+        errorMessage = e.toString();
         isLoading = false;
       });
     }
   }
 
-  void _startTimer() {
-    timeLeft = 30;
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      if (timeLeft > 0) {
-        setState(() {
-          timeLeft--;
-        });
-      } else {
-        timer.cancel();
-        _nextQuestion();
-      }
+  void _selectAnswer(int questionIndex, String answer) {
+    setState(() {
+      userAnswers[questionIndex] = answer;
     });
   }
 
-  void _selectAnswer(int index) {
-    // Prevent multiple rapid clicks
-    if (isAnswered) return;
-    
-    // Bounds checking
-    if (currentQuestionIndex < 0 || 
-        currentQuestionIndex >= questions.length ||
-        currentQuestionIndex >= allShuffledAnswers.length) {
-      return;
-    }
-    
-    final shuffledAnswers = allShuffledAnswers[currentQuestionIndex];
-    if (index < 0 || index >= shuffledAnswers.length) {
-      return;
-    }
-
-    final selectedAnswer = shuffledAnswers[index];
-    final correctAnswer = questions[currentQuestionIndex].correctAnswer;
-
-    // Cancel timer first to prevent race condition
-    _timer?.cancel();
-
-    if (!mounted) return;
-
+  void _goToQuestion(int index) {
     setState(() {
-      selectedAnswerIndex = index;
-      isAnswered = true;
-      // Normalize strings for comparison (trim whitespace, case-insensitive)
-      final normalizedSelected = selectedAnswer.trim().toLowerCase();
-      final normalizedCorrect = correctAnswer.trim().toLowerCase();
-      if (normalizedSelected == normalizedCorrect) {
-        score++;
-      }
+      currentQuestionIndex = index;
     });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        _nextQuestion();
-      }
-    });
+  void _previousQuestion() {
+    if (currentQuestionIndex > 0) {
+      _goToQuestion(currentQuestionIndex - 1);
+    }
   }
 
   void _nextQuestion() {
-    if (!mounted) return;
-    
-    // Ensure we have valid questions
-    if (questions.isEmpty) return;
-    
     if (currentQuestionIndex < questions.length - 1) {
-      setState(() {
-        currentQuestionIndex++;
-        selectedAnswerIndex = null;
-        isAnswered = false;
-      });
-      _startTimer();
-    } else {
-      _timer?.cancel();
-      _saveHistory().then((_) {
-        if (mounted) {
-          _showResultDialog();
-        }
-      });
+      _goToQuestion(currentQuestionIndex + 1);
     }
   }
 
-  Future<void> _saveHistory() async {
+  void _submitQuiz() {
+    // Check if user has answered all questions
+    if (!QuizService.hasAnsweredAll(
+      totalQuestions: questions.length,
+      userAnswers: userAnswers,
+    )) {
+      _showIncompleteWarning();
+      return;
+    }
+
+    // Calculate score
+    final score = QuizService.calculateScore(
+      questions: questions,
+      userAnswers: userAnswers,
+    );
+
+    // Save history
+    _saveHistory(score).then((_) {
+      if (mounted) {
+        _showResultDialog(score);
+      }
+    });
+  }
+
+  void _showIncompleteWarning() {
+    final unansweredQuestions = QuizService.getUnansweredQuestions(
+      totalQuestions: questions.length,
+      userAnswers: userAnswers,
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Icon(
+              PhosphorIcons.warning(PhosphorIconsStyle.fill),
+              color: Colors.orange,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Incomplete Quiz',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'You haven\'t answered all questions yet!',
+              style: GoogleFonts.poppins(fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Unanswered questions: ${unansweredQuestions.map((i) => i + 1).join(", ")}',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Do you want to submit anyway?',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Go Back',
+              style: GoogleFonts.poppins(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              final score = QuizService.calculateScore(
+                questions: questions,
+                userAnswers: userAnswers,
+              );
+              _saveHistory(score).then((_) {
+                if (mounted) {
+                  _showResultDialog(score);
+                }
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Submit Anyway',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveHistory(int score) async {
     final history = QuizHistory(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       categoryId: widget.categoryId,
@@ -185,13 +235,11 @@ class _QuizScreenState extends State<QuizScreen> {
       score: ((score / questions.length) * 100).toInt(),
       completedAt: DateTime.now(),
     );
-    
+
     await QuizHistoryService.saveHistory(history);
   }
 
-  void _showResultDialog() {
-    _timer?.cancel();
-    
+  void _showResultDialog(int score) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -241,6 +289,15 @@ class _QuizScreenState extends State<QuizScreen> {
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
                 color: primaryColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${((score / questions.length) * 100).toInt()}%',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
               ),
             ),
             const SizedBox(height: 24),
@@ -381,75 +438,6 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    // Safety check before accessing questions
-    if (currentQuestionIndex < 0 || 
-        currentQuestionIndex >= questions.length ||
-        currentQuestionIndex >= allShuffledAnswers.length) {
-      return Scaffold(
-        backgroundColor: Colors.grey.shade50,
-        appBar: AppBar(
-          backgroundColor: widget.categoryColor,
-          title: Text(
-            widget.categoryTitle,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        body: const Center(
-          child: Text('Error: Invalid question index'),
-        ),
-      );
-    }
-
-    final question = questions[currentQuestionIndex];
-    final shuffledAnswers = allShuffledAnswers[currentQuestionIndex];
-    
-    if (shuffledAnswers.isEmpty) {
-      return Scaffold(
-        backgroundColor: Colors.grey.shade50,
-        appBar: AppBar(
-          backgroundColor: widget.categoryColor,
-          title: Text(
-            widget.categoryTitle,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        body: const Center(
-          child: Text('Error: No answers available'),
-        ),
-      );
-    }
-    
-    final correctAnswerIndex = shuffledAnswers.indexOf(question.correctAnswer);
-    if (correctAnswerIndex == -1) {
-      // This shouldn't happen, but handle it gracefully
-      return Scaffold(
-        backgroundColor: Colors.grey.shade50,
-        appBar: AppBar(
-          backgroundColor: widget.categoryColor,
-          title: Text(
-            widget.categoryTitle,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        body: const Center(
-          child: Text('Error: Correct answer not found'),
-        ),
-      );
-    }
-    
-    final progress = questions.isEmpty 
-        ? 0.0 
-        : (currentQuestionIndex + 1) / questions.length;
-
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -457,7 +445,38 @@ class _QuizScreenState extends State<QuizScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Show confirmation dialog
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(
+                  'Exit Quiz?',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                ),
+                content: Text(
+                  'Your progress will be lost.',
+                  style: GoogleFonts.poppins(),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Cancel', style: GoogleFonts.poppins()),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: Text('Exit', style: GoogleFonts.poppins(color: Colors.white)),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
         title: Text(
           widget.categoryTitle,
@@ -466,17 +485,10 @@ class _QuizScreenState extends State<QuizScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.white.withOpacity(0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        ),
       ),
       body: Column(
         children: [
+          // Header with progress
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -489,6 +501,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             child: Column(
               children: [
+                // Question progress
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -526,21 +539,19 @@ class _QuizScreenState extends State<QuizScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: timeLeft <= 10
-                            ? Colors.red.withOpacity(0.3)
-                            : Colors.white.withOpacity(0.2),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            Ionicons.timer,
+                            PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
                             color: Colors.white,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${timeLeft}s',
+                            '${userAnswers.length}/${questions.length}',
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -553,75 +564,206 @@ class _QuizScreenState extends State<QuizScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        PhosphorIcons.trophy(PhosphorIconsStyle.fill),
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Score: $score',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                // Question number grid
+                SizedBox(
+                  height: 50,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: questions.length,
+                    itemBuilder: (context, index) {
+                      final isAnswered = userAnswers.containsKey(index);
+                      final isCurrent = index == currentQuestionIndex;
+
+                      return GestureDetector(
+                        onTap: () => _goToQuestion(index),
+                        child: Container(
+                          width: 45,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: isCurrent
+                                ? Colors.white
+                                : isAnswered
+                                    ? Colors.green.withOpacity(0.3)
+                                    : Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isCurrent
+                                  ? Colors.white
+                                  : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: GoogleFonts.poppins(
+                                color: isCurrent
+                                    ? widget.categoryColor
+                                    : Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ],
             ),
           ),
+
+          // Question content
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: questions.length,
+              onPageChanged: (index) {
+                setState(() {
+                  currentQuestionIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final question = questions[index];
+                final shuffledAnswers = allShuffledAnswers[index];
+                final selectedAnswer = userAnswers[index];
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Question
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      question.question,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                        height: 1.4,
+                        child: Text(
+                          question.question,
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Answers
+                      ...List.generate(
+                        shuffledAnswers.length,
+                        (answerIndex) => _buildAnswerOption(
+                          shuffledAnswers[answerIndex],
+                          answerIndex,
+                          index,
+                          selectedAnswer,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Navigation buttons
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                if (currentQuestionIndex > 0)
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _previousQuestion,
+                      icon: Icon(
+                        Ionicons.chevron_back,
+                        color: primaryColor,
+                      ),
+                      label: Text(
+                        'Previous',
+                        style: GoogleFonts.poppins(
+                          color: primaryColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: primaryColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  ...List.generate(
-                    shuffledAnswers.length,
-                    (index) => _buildAnswerOption(
-                      shuffledAnswers[index],
-                      index,
-                      correctAnswerIndex,
-                    ),
-                  ),
-                ],
-              ),
+                if (currentQuestionIndex > 0) const SizedBox(width: 12),
+                Expanded(
+                  flex: currentQuestionIndex == 0 ? 1 : 1,
+                  child: currentQuestionIndex < questions.length - 1
+                      ? ElevatedButton.icon(
+                          onPressed: _nextQuestion,
+                          icon: const Icon(Ionicons.chevron_forward,
+                              color: Colors.white),
+                          label: Text(
+                            'Next',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        )
+                      : ElevatedButton.icon(
+                          onPressed: _submitQuiz,
+                          icon: const Icon(
+                            Ionicons.checkmark_circle,
+                            color: Colors.white,
+                          ),
+                          label: Text(
+                            'Submit Quiz',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                ),
+              ],
             ),
           ),
         ],
@@ -629,66 +771,37 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  Widget _buildAnswerOption(String answer, int index, int correctIndex) {
-    bool isSelected = selectedAnswerIndex == index;
-    bool isCorrect = index == correctIndex;
-    
-    Color getColor() {
-      if (!isAnswered) {
-        return isSelected ? primaryColor.withOpacity(0.1) : Colors.white;
-      }
-      if (isCorrect) {
-        return Colors.green.withOpacity(0.2);
-      }
-      if (isSelected && !isCorrect) {
-        return Colors.red.withOpacity(0.2);
-      }
-      return Colors.white;
-    }
-
-    Color getBorderColor() {
-      if (!isAnswered) {
-        return isSelected ? primaryColor : Colors.grey.shade300;
-      }
-      if (isCorrect) {
-        return Colors.green;
-      }
-      if (isSelected && !isCorrect) {
-        return Colors.red;
-      }
-      return Colors.grey.shade300;
-    }
-
-    IconData? getIcon() {
-      if (!isAnswered) return null;
-      if (isCorrect) {
-        return PhosphorIcons.checkCircle(PhosphorIconsStyle.fill);
-      }
-      if (isSelected && !isCorrect) {
-        return PhosphorIcons.xCircle(PhosphorIconsStyle.fill);
-      }
-      return null;
-    }
-
-    Color? getIconColor() {
-      if (!isAnswered) return null;
-      if (isCorrect) return Colors.green;
-      if (isSelected && !isCorrect) return Colors.red;
-      return null;
-    }
+  Widget _buildAnswerOption(
+    String answer,
+    int answerIndex,
+    int questionIndex,
+    String? selectedAnswer,
+  ) {
+    final isSelected = selectedAnswer == answer;
 
     return GestureDetector(
-      onTap: () => _selectAnswer(index),
+      onTap: () => _selectAnswer(questionIndex, answer),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: getColor(),
+          color: isSelected
+              ? primaryColor.withOpacity(0.1)
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: getBorderColor(),
+            color: isSelected ? primaryColor : Colors.grey.shade300,
             width: 2,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: primaryColor.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -696,15 +809,17 @@ class _QuizScreenState extends State<QuizScreen> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: getBorderColor().withOpacity(0.2),
+                color: isSelected
+                    ? primaryColor
+                    : Colors.grey.shade200,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
-                  String.fromCharCode(65 + index),
+                  String.fromCharCode(65 + answerIndex),
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
-                    color: getBorderColor(),
+                    color: isSelected ? Colors.white : Colors.grey.shade600,
                   ),
                 ),
               ),
@@ -715,16 +830,16 @@ class _QuizScreenState extends State<QuizScreen> {
                 answer,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: Colors.grey.shade800,
                 ),
               ),
             ),
-            if (getIcon() != null)
+            if (isSelected)
               Icon(
-                getIcon(),
-                color: getIconColor(),
-                size: 28,
+                PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
+                color: primaryColor,
+                size: 24,
               ),
           ],
         ),
