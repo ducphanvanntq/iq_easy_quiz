@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'quiz_screen.dart';
 import 'add_question_screen.dart';
 import 'data/quiz_categories.dart';
+import 'services/checkin_service.dart';
+import 'widgets/daily_checkin_modal.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserName();
+    _checkDailyCheckin();
   }
 
   Future<void> _loadUserName() async {
@@ -30,6 +33,29 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       userName = prefs.getString('userName') ?? 'User';
     });
+  }
+
+  Future<void> _checkDailyCheckin() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    final hasCheckedIn = await CheckinService.hasCheckedInToday();
+    
+    if (!hasCheckedIn && mounted) {
+      _showCheckinModal();
+    }
+  }
+
+  void _showCheckinModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const DailyCheckinModal(),
+      ),
+    );
   }
 
   @override
@@ -61,10 +87,21 @@ class _HomeScreenState extends State<HomeScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 140,
+            expandedHeight: 100,
             floating: false,
             pinned: true,
             backgroundColor: primaryColor,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  PhosphorIcons.calendarCheck(PhosphorIconsStyle.fill),
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: _showCheckinModal,
+                tooltip: 'Check-in History',
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
@@ -76,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -86,14 +123,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             Icon(
                               Ionicons.hand_right,
                               color: Colors.white.withOpacity(0.9),
-                              size: 28,
+                              size: 24,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Hello, $userName!',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 26,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -102,11 +139,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         Text(
                           'Choose a category to start your quiz',
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
+                            fontSize: 13,
                             color: Colors.white.withOpacity(0.9),
                             fontWeight: FontWeight.w400,
                           ),
