@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'services/quiz_service.dart';
 
 class AddQuestionScreen extends StatefulWidget {
   const AddQuestionScreen({super.key});
@@ -121,73 +123,134 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
 
   void _previousStep() {
     if (currentStep > 0) {
-      setState(() {
-        currentStep--;
-      });
-      _pageController.animateToPage(
-        currentStep,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      if (selectedQuestionType == 'boolean' && currentStep == 4) {
+        setState(() {
+          currentStep = 2;
+        });
+        _pageController.animateToPage(
+          currentStep,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        setState(() {
+          currentStep--;
+        });
+        _pageController.animateToPage(
+          currentStep,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
-  void _submitQuestion() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
-                color: Colors.green,
-                size: 28,
+  Future<void> _submitQuestion() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userName = prefs.getString('userName') ?? 'User';
+
+      String correctAnswer;
+      List<String> incorrectAnswers;
+
+      if (selectedQuestionType == 'boolean') {
+        correctAnswer = selectedCorrectAnswerIndex == 0 ? 'True' : 'False';
+        incorrectAnswers = [selectedCorrectAnswerIndex == 0 ? 'False' : 'True'];
+      } else {
+        final allAnswers = [
+          _answer1Controller.text.trim(),
+          _answer2Controller.text.trim(),
+          _answer3Controller.text.trim(),
+          _answer4Controller.text.trim(),
+        ];
+
+        correctAnswer = allAnswers[selectedCorrectAnswerIndex!];
+        incorrectAnswers = List.from(allAnswers);
+        incorrectAnswers.removeAt(selectedCorrectAnswerIndex!);
+      }
+
+      await QuizService.saveCustomQuestion(
+        categoryId: selectedCategory!,
+        categoryTitle: selectedCategoryTitle!,
+        difficulty: selectedDifficulty!,
+        type: selectedQuestionType!,
+        question: _questionController.text.trim(),
+        correctAnswer: correctAnswer,
+        incorrectAnswers: incorrectAnswers,
+        createdBy: userName,
+        status: 'pending',
+      );
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
+                    color: Colors.green,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Success!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              'Your question has been added successfully!',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Success!',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context, true);
+                },
+                child: Text(
+                  'OK',
+                  style: GoogleFonts.poppins(
+                    color: primaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Your question has been added successfully!',
-          style: GoogleFonts.poppins(
-            fontSize: 15,
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: Text(
-              'OK',
-              style: GoogleFonts.poppins(
-                color: primaryColor,
-                fontWeight: FontWeight.w600,
-              ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error: $e',
+              style: GoogleFonts.poppins(),
             ),
+            backgroundColor: Colors.red,
           ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 
   @override
@@ -286,94 +349,113 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   Widget _buildCategoryStep() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        PhosphorIcons.tag(PhosphorIconsStyle.fill),
+                        color: primaryColor,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Select Category',
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                  ],
                 ),
-                child: Icon(
-                  PhosphorIcons.tag(PhosphorIconsStyle.fill),
-                  color: primaryColor,
-                  size: 28,
+                const SizedBox(height: 8),
+                Text(
+                  'Choose the category for your question',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Select Category',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
+                const SizedBox(height: 24),
+                ...categories.map((category) {
+                  final isSelected = selectedCategory == category['id'];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedCategory = category['id'];
+                          selectedCategoryTitle = category['title'];
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected ? primaryColor.withOpacity(0.1) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected ? primaryColor : Colors.grey.shade300,
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                category['title']!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                  color: isSelected ? primaryColor : Colors.grey.shade800,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(
+                                PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
+                                color: primaryColor,
+                                size: 24,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                const SizedBox(height: 80),
+              ],
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                blurRadius: 10,
+                offset: const Offset(0, -2),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Choose the category for your question',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 24),
-          ...categories.map((category) {
-            final isSelected = selectedCategory == category['id'];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedCategory = category['id'];
-                    selectedCategoryTitle = category['title'];
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isSelected ? primaryColor.withOpacity(0.1) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected ? primaryColor : Colors.grey.shade300,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          category['title']!,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected ? primaryColor : Colors.grey.shade800,
-                          ),
-                        ),
-                      ),
-                      if (isSelected)
-                        Icon(
-                          PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
-                          color: primaryColor,
-                          size: 24,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-          const SizedBox(height: 20),
-          _buildNextButton(selectedCategory != null),
-        ],
-      ),
+          child: _buildNextButton(selectedCategory != null),
+        ),
+      ],
     );
   }
 
@@ -614,6 +696,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   Widget _buildQuestionAnswersStep() {
+    final isBoolean = selectedQuestionType == 'boolean';
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -634,19 +718,23 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                'Question & Answers',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+              Expanded(
+                child: Text(
+                  isBoolean ? 'Enter Question' : 'Question & Answers',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
-            'Write your question and 4 answer options',
+            isBoolean 
+                ? 'Write your True/False question'
+                : 'Write your question and 4 answer options',
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -666,8 +754,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           TextField(
             controller: _questionController,
             maxLines: 3,
+            onChanged: (value) => setState(() {}),
             decoration: InputDecoration(
-              hintText: 'Enter your question here...',
+              hintText: isBoolean 
+                  ? 'Enter your True/False question...'
+                  : 'Enter your question here...',
               hintStyle: GoogleFonts.poppins(
                 color: Colors.grey.shade400,
               ),
@@ -693,32 +784,37 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
           
-          Text(
-            'Answer Options',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
+          if (!isBoolean) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Answer Options',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade800,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          _buildAnswerField('A', _answer1Controller),
-          const SizedBox(height: 12),
-          _buildAnswerField('B', _answer2Controller),
-          const SizedBox(height: 12),
-          _buildAnswerField('C', _answer3Controller),
-          const SizedBox(height: 12),
-          _buildAnswerField('D', _answer4Controller),
+            const SizedBox(height: 12),
+            _buildAnswerField('A', _answer1Controller),
+            const SizedBox(height: 12),
+            _buildAnswerField('B', _answer2Controller),
+            const SizedBox(height: 12),
+            _buildAnswerField('C', _answer3Controller),
+            const SizedBox(height: 12),
+            _buildAnswerField('D', _answer4Controller),
+          ],
+          
           const SizedBox(height: 24),
           
           _buildNextButton(
-            _questionController.text.trim().isNotEmpty &&
-            _answer1Controller.text.trim().isNotEmpty &&
-            _answer2Controller.text.trim().isNotEmpty &&
-            _answer3Controller.text.trim().isNotEmpty &&
-            _answer4Controller.text.trim().isNotEmpty,
+            isBoolean 
+                ? _questionController.text.trim().isNotEmpty
+                : (_questionController.text.trim().isNotEmpty &&
+                   _answer1Controller.text.trim().isNotEmpty &&
+                   _answer2Controller.text.trim().isNotEmpty &&
+                   _answer3Controller.text.trim().isNotEmpty &&
+                   _answer4Controller.text.trim().isNotEmpty),
           ),
         ],
       ),
@@ -783,12 +879,17 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   Widget _buildCorrectAnswerStep() {
-    final answers = [
-      {'label': 'A', 'text': _answer1Controller.text},
-      {'label': 'B', 'text': _answer2Controller.text},
-      {'label': 'C', 'text': _answer3Controller.text},
-      {'label': 'D', 'text': _answer4Controller.text},
-    ];
+    final answers = selectedQuestionType == 'boolean'
+        ? [
+            {'label': 'True', 'text': 'True'},
+            {'label': 'False', 'text': 'False'},
+          ]
+        : [
+            {'label': 'A', 'text': _answer1Controller.text},
+            {'label': 'B', 'text': _answer2Controller.text},
+            {'label': 'C', 'text': _answer3Controller.text},
+            {'label': 'D', 'text': _answer4Controller.text},
+          ];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -864,7 +965,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           ),
           const SizedBox(height: 24),
           
-          ...List.generate(4, (index) {
+          ...List.generate(answers.length, (index) {
             final isSelected = selectedCorrectAnswerIndex == index;
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),

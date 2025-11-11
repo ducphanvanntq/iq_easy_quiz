@@ -5,6 +5,8 @@ import 'package:ionicons/ionicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'welcome_screen.dart';
 import 'edit_profile_screen.dart';
+import 'my_questions_screen.dart';
+import 'services/quiz_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -20,11 +22,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String userName = '';
   int userAge = 0;
   String userGender = 'Male';
+  int questionCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadQuestionCount();
   }
 
   Future<void> _loadUserInfo() async {
@@ -33,6 +37,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       userName = prefs.getString('userName') ?? 'User';
       userAge = prefs.getInt('userAge') ?? 0;
       userGender = prefs.getString('userGender') ?? 'Male';
+    });
+  }
+
+  Future<void> _loadQuestionCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentUserName = prefs.getString('userName') ?? 'User';
+    final questions = await QuizService.getAllCustomQuestions();
+    final userQuestions = questions.where((q) => q.createdBy == currentUserName).toList();
+    
+    setState(() {
+      questionCount = userQuestions.length;
     });
   }
 
@@ -257,6 +272,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       if (result == true && mounted) {
                         _loadUserInfo();
                       }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSettingCard(
+                    icon: PhosphorIcons.notePencil(PhosphorIconsStyle.bold),
+                    title: 'My Questions',
+                    subtitle: '$questionCount questions created',
+                    color: Colors.purple,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MyQuestionsScreen(),
+                        ),
+                      );
+                      _loadQuestionCount();
                     },
                   ),
                   const SizedBox(height: 12),
