@@ -23,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int userAge = 0;
   String userGender = 'Male';
   int questionCount = 0;
+  int userPoints = 0;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       userName = prefs.getString('userName') ?? 'User';
       userAge = prefs.getInt('userAge') ?? 0;
       userGender = prefs.getString('userGender') ?? 'Male';
+      userPoints = prefs.getInt('userPoints') ?? 0;
     });
   }
 
@@ -118,7 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 220,
+            expandedHeight: 260,
             floating: false,
             pinned: true,
             backgroundColor: primaryColor,
@@ -234,6 +236,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                PhosphorIcons.coins(PhosphorIconsStyle.fill),
+                                size: 20,
+                                color: Colors.amber.shade300,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '$userPoints Points',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

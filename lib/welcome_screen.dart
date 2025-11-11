@@ -50,6 +50,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
       await prefs.setString('userName', _nameController.text.trim());
       await prefs.setInt('userAge', int.parse(_ageController.text.trim()));
       await prefs.setString('userGender', selectedGender);
+      await prefs.setInt('userPoints', 5);
       await prefs.setBool('isFirstTime', false);
 
       if (mounted) {
