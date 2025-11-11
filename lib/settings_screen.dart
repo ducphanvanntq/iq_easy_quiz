@@ -186,16 +186,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         Text(
                           userName,
                           style: GoogleFonts.poppins(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -237,9 +237,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -253,14 +253,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             children: [
                               Icon(
                                 PhosphorIcons.coins(PhosphorIconsStyle.fill),
-                                size: 20,
+                                size: 18,
                                 color: Colors.amber.shade300,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Text(
                                 '$userPoints Points',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),

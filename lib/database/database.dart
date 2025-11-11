@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'quiz_history_db.dart';
 import 'quiz_db.dart';
 import 'daily_checkin_db.dart';
+import 'daily_mission_db.dart';
 
 class IsarDatabase {
   static final IsarDatabase _instance = IsarDatabase._internal();
@@ -22,7 +23,7 @@ class IsarDatabase {
   static Future<Isar> _initIsar() async {
     final dir = await getApplicationDocumentsDirectory();
     return await Isar.open(
-      [QuizHistoryDbSchema, QuizDbSchema, DailyCheckInDbSchema],
+      [QuizHistoryDbSchema, QuizDbSchema, DailyCheckInDbSchema, DailyMissionDbSchema],
       directory: dir.path,
       name: 'quiz_database',
       inspector: true,

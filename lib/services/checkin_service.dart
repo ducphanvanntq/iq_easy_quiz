@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database.dart';
 import '../database/daily_checkin_db.dart';
+import 'mission_service.dart';
 
 class CheckInService {
   static Future<List<DailyCheckInDb>> getAllCheckIns() async {
@@ -60,6 +61,9 @@ class CheckInService {
       final prefs = await SharedPreferences.getInstance();
       final currentPoints = prefs.getInt('userPoints') ?? 0;
       await prefs.setInt('userPoints', currentPoints + 5);
+      
+      await MissionService.cleanOldMissions();
+      await MissionService.generateTodayMissions();
     }
   }
 

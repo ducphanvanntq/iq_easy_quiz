@@ -8,6 +8,7 @@ import 'models/question_model.dart';
 import 'models/quiz_history.dart';
 import 'services/quiz_service.dart';
 import 'services/quiz_history_service.dart';
+import 'services/mission_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final String categoryId;
@@ -595,6 +596,46 @@ class _QuizScreenState extends State<QuizScreen> {
     );
 
     await QuizHistoryService.saveHistory(history);
+
+    final completedMission = await MissionService.checkAndCompleteMission(
+      categoryId: widget.categoryId,
+      difficulty: widget.difficulty,
+    );
+
+    if (completedMission != null && mounted) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(
+                    PhosphorIcons.trophy(PhosphorIconsStyle.fill),
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '🎉 Mission Completed! +${completedMission.rewardPoints} points',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+        }
+      });
+    }
   }
 
   void _showResultDialog(int score) {

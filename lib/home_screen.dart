@@ -7,7 +7,9 @@ import 'quiz_screen.dart';
 import 'add_question_screen.dart';
 import 'data/quiz_categories.dart';
 import 'services/checkin_service.dart';
+import 'services/mission_service.dart';
 import 'widgets/daily_checkin_modal.dart';
+import 'widgets/daily_mission_modal.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,12 +22,15 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color primaryColor = Color(0xFF06A8E8);
   static const Color secondaryColor = Color(0xFF00C9D7);
   String userName = '';
+  int completedMissions = 0;
+  int totalMissions = 0;
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
     _checkDailyCheckIn();
+    _loadMissionStats();
   }
 
   Future<void> _loadUserName() async {
@@ -45,8 +50,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showCheckInModal() {
-    showDialog(
+  Future<void> _loadMissionStats() async {
+    final stats = await MissionService.getMissionStats();
+    setState(() {
+      completedMissions = stats['completedCount'] ?? 0;
+      totalMissions = stats['totalCount'] ?? 0;
+    });
+  }
+
+  void _showCheckInModal() async {
+    await showDialog(
       context: context,
       barrierDismissible: true,
       builder: (context) => Dialog(
@@ -56,6 +69,21 @@ class _HomeScreenState extends State<HomeScreen> {
         child: const DailyCheckInModal(),
       ),
     );
+    _loadMissionStats();
+  }
+
+  void _showMissionModal() async {
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const DailyMissionModal(),
+      ),
+    );
+    _loadMissionStats();
   }
 
   @override
@@ -92,6 +120,51 @@ class _HomeScreenState extends State<HomeScreen> {
             pinned: true,
             backgroundColor: primaryColor,
             actions: [
+              Stack(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      PhosphorIcons.listChecks(PhosphorIconsStyle.fill),
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    onPressed: _showMissionModal,
+                    tooltip: 'Daily Missions',
+                  ),
+                  if (totalMissions > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: completedMissions == totalMissions
+                              ? Colors.green
+                              : Colors.amber,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$completedMissions/$totalMissions',
+                            style: GoogleFonts.poppins(
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               IconButton(
                 icon: Icon(
                   PhosphorIcons.calendarCheck(PhosphorIconsStyle.fill),
