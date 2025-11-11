@@ -2,30 +2,30 @@ import 'package:isar_community/isar.dart';
 import '../database/database.dart';
 import '../database/daily_checkin_db.dart';
 
-class CheckinService {
-  static Future<List<DailyCheckinDb>> getAllCheckins() async {
+class CheckInService {
+  static Future<List<DailyCheckInDb>> getAllCheckIns() async {
     final isar = await IsarDatabase.instance;
-    final allIds = await isar.dailyCheckinDbs.where().idProperty().findAll();
-    final allCheckins = await isar.dailyCheckinDbs.getAll(allIds);
+    final allIds = await isar.dailyCheckInDbs.where().idProperty().findAll();
+    final allCheckIns = await isar.dailyCheckInDbs.getAll(allIds);
     
-    final validCheckins = allCheckins.where((c) => c != null).cast<DailyCheckinDb>().toList();
-    validCheckins.sort((a, b) => b.checkinDate.compareTo(a.checkinDate));
+    final validCheckIns = allCheckIns.where((c) => c != null).cast<DailyCheckInDb>().toList();
+    validCheckIns.sort((a, b) => b.checkInDate.compareTo(a.checkInDate));
     
-    return validCheckins;
+    return validCheckIns;
   }
 
   static Future<bool> hasCheckedInToday() async {
-    final allCheckins = await getAllCheckins();
+    final allCheckIns = await getAllCheckIns();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    return allCheckins.any((c) {
-      final checkinDay = DateTime(
-        c.checkinDate.year,
-        c.checkinDate.month,
-        c.checkinDate.day,
+    return allCheckIns.any((c) {
+      final checkInDay = DateTime(
+        c.checkInDate.year,
+        c.checkInDate.month,
+        c.checkInDate.day,
       );
-      return checkinDay == today;
+      return checkInDay == today;
     });
   }
 
@@ -34,64 +34,64 @@ class CheckinService {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    final allCheckins = await getAllCheckins();
-    final todayCheckin = allCheckins.firstWhere(
+    final allCheckIns = await getAllCheckIns();
+    final todayCheckIn = allCheckIns.firstWhere(
       (c) {
-        final checkinDay = DateTime(
-          c.checkinDate.year,
-          c.checkinDate.month,
-          c.checkinDate.day,
+        final checkInDay = DateTime(
+          c.checkInDate.year,
+          c.checkInDate.month,
+          c.checkInDate.day,
         );
-        return checkinDay == today;
+        return checkInDay == today;
       },
-      orElse: () => DailyCheckinDb()..id = 0,
+      orElse: () => DailyCheckInDb()..id = 0,
     );
 
-    if (todayCheckin.id == 0) {
-      final checkin = DailyCheckinDb()
-        ..checkinDate = today
+    if (todayCheckIn.id == 0) {
+      final checkIn = DailyCheckInDb()
+        ..checkInDate = today
         ..createdAt = DateTime.now();
 
       await isar.writeTxn(() async {
-        await isar.dailyCheckinDbs.put(checkin);
+        await isar.dailyCheckInDbs.put(checkIn);
       });
     }
   }
 
-  static Future<List<DailyCheckinDb>> getCheckinsForMonth(DateTime month) async {
-    final allCheckins = await getAllCheckins();
+  static Future<List<DailyCheckInDb>> getCheckInsForMonth(DateTime month) async {
+    final allCheckIns = await getAllCheckIns();
     
-    return allCheckins.where((c) {
-      return c.checkinDate.year == month.year &&
-          c.checkinDate.month == month.month;
+    return allCheckIns.where((c) {
+      return c.checkInDate.year == month.year &&
+          c.checkInDate.month == month.month;
     }).toList()
-      ..sort((a, b) => a.checkinDate.compareTo(b.checkinDate));
+      ..sort((a, b) => a.checkInDate.compareTo(b.checkInDate));
   }
 
-  static Future<List<DateTime>> getCheckinDatesForMonth(DateTime month) async {
-    final checkins = await getCheckinsForMonth(month);
-    return checkins.map((c) => c.checkinDate).toList();
+  static Future<List<DateTime>> getCheckInDatesForMonth(DateTime month) async {
+    final checkIns = await getCheckInsForMonth(month);
+    return checkIns.map((c) => c.checkInDate).toList();
   }
 
-  static Future<DailyCheckinDb?> getLastCheckin() async {
-    final allCheckins = await getAllCheckins();
+  static Future<DailyCheckInDb?> getLastCheckIn() async {
+    final allCheckIns = await getAllCheckIns();
     
-    if (allCheckins.isEmpty) return null;
+    if (allCheckIns.isEmpty) return null;
     
-    return allCheckins.first;
+    return allCheckIns.first;
   }
 
-  static Future<int> getTotalCheckins() async {
-    final allCheckins = await getAllCheckins();
-    return allCheckins.length;
+  static Future<int> getTotalCheckIns() async {
+    final allCheckIns = await getAllCheckIns();
+    return allCheckIns.length;
   }
 
-  static Future<Map<String, dynamic>> getCheckinStats() async {
-    final totalCheckins = await getTotalCheckins();
-    final hasCheckedInToday = await CheckinService.hasCheckedInToday();
+  static Future<Map<String, dynamic>> getCheckInStats() async {
+    final totalCheckIns = await getTotalCheckIns();
+    final hasCheckedInToday = await CheckInService.hasCheckedInToday();
 
     return {
-      'totalCheckins': totalCheckins,
+      'totalCheckIns': totalCheckIns,
       'hasCheckedInToday': hasCheckedInToday,
     };
   }

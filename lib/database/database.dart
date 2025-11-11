@@ -22,7 +22,7 @@ class IsarDatabase {
   static Future<Isar> _initIsar() async {
     final dir = await getApplicationDocumentsDirectory();
     return await Isar.open(
-      [QuizHistoryDbSchema, QuizDbSchema, DailyCheckinDbSchema],
+      [QuizHistoryDbSchema, QuizDbSchema, DailyCheckInDbSchema],
       directory: dir.path,
       name: 'quiz_database',
       inspector: true,

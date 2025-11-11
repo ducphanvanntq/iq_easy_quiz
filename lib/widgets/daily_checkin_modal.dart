@@ -3,14 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../services/checkin_service.dart';
 
-class DailyCheckinModal extends StatefulWidget {
-  const DailyCheckinModal({super.key});
+class DailyCheckInModal extends StatefulWidget {
+  const DailyCheckInModal({super.key});
 
   @override
-  State<DailyCheckinModal> createState() => _DailyCheckinModalState();
+  State<DailyCheckInModal> createState() => _DailyCheckInModalState();
 }
 
-class _DailyCheckinModalState extends State<DailyCheckinModal> {
+class _DailyCheckInModalState extends State<DailyCheckInModal> {
   static const Color primaryColor = Color(0xFF06A8E8);
   static const Color secondaryColor = Color(0xFF00C9D7);
 
@@ -31,8 +31,8 @@ class _DailyCheckinModalState extends State<DailyCheckinModal> {
       isLoading = true;
     });
 
-    final dates = await CheckinService.getCheckinDatesForMonth(currentMonth);
-    final statistics = await CheckinService.getCheckinStats();
+    final dates = await CheckInService.getCheckInDatesForMonth(currentMonth);
+    final statistics = await CheckInService.getCheckInStats();
 
     setState(() {
       checkedInDates = dates;
@@ -42,7 +42,7 @@ class _DailyCheckinModalState extends State<DailyCheckinModal> {
   }
 
   Future<void> _checkIn() async {
-    await CheckinService.checkInToday();
+    await CheckInService.checkInToday();
     await _loadData();
   }
 

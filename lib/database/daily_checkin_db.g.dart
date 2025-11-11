@@ -9,17 +9,17 @@ part of 'daily_checkin_db.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetDailyCheckinDbCollection on Isar {
-  IsarCollection<DailyCheckinDb> get dailyCheckinDbs => this.collection();
+extension GetDailyCheckInDbCollection on Isar {
+  IsarCollection<DailyCheckInDb> get dailyCheckInDbs => this.collection();
 }
 
-const DailyCheckinDbSchema = CollectionSchema(
-  name: r'DailyCheckinDb',
-  id: -4147162314219724692,
+const DailyCheckInDbSchema = CollectionSchema(
+  name: r'DailyCheckInDb',
+  id: 5747507820580413409,
   properties: {
-    r'checkinDate': PropertySchema(
+    r'checkInDate': PropertySchema(
       id: 0,
-      name: r'checkinDate',
+      name: r'checkInDate',
       type: IsarType.dateTime,
     ),
     r'createdAt': PropertySchema(
@@ -29,20 +29,20 @@ const DailyCheckinDbSchema = CollectionSchema(
     ),
   },
 
-  estimateSize: _dailyCheckinDbEstimateSize,
-  serialize: _dailyCheckinDbSerialize,
-  deserialize: _dailyCheckinDbDeserialize,
-  deserializeProp: _dailyCheckinDbDeserializeProp,
+  estimateSize: _dailyCheckInDbEstimateSize,
+  serialize: _dailyCheckInDbSerialize,
+  deserialize: _dailyCheckInDbDeserialize,
+  deserializeProp: _dailyCheckInDbDeserializeProp,
   idName: r'id',
   indexes: {
-    r'checkinDate': IndexSchema(
-      id: -681195849625738402,
-      name: r'checkinDate',
+    r'checkInDate': IndexSchema(
+      id: -2653265930173368932,
+      name: r'checkInDate',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'checkinDate',
+          name: r'checkInDate',
           type: IndexType.value,
           caseSensitive: false,
         ),
@@ -52,14 +52,14 @@ const DailyCheckinDbSchema = CollectionSchema(
   links: {},
   embeddedSchemas: {},
 
-  getId: _dailyCheckinDbGetId,
-  getLinks: _dailyCheckinDbGetLinks,
-  attach: _dailyCheckinDbAttach,
+  getId: _dailyCheckInDbGetId,
+  getLinks: _dailyCheckInDbGetLinks,
+  attach: _dailyCheckInDbAttach,
   version: '3.3.0-dev.3',
 );
 
-int _dailyCheckinDbEstimateSize(
-  DailyCheckinDb object,
+int _dailyCheckInDbEstimateSize(
+  DailyCheckInDb object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -67,30 +67,30 @@ int _dailyCheckinDbEstimateSize(
   return bytesCount;
 }
 
-void _dailyCheckinDbSerialize(
-  DailyCheckinDb object,
+void _dailyCheckInDbSerialize(
+  DailyCheckInDb object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.checkinDate);
+  writer.writeDateTime(offsets[0], object.checkInDate);
   writer.writeDateTime(offsets[1], object.createdAt);
 }
 
-DailyCheckinDb _dailyCheckinDbDeserialize(
+DailyCheckInDb _dailyCheckInDbDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = DailyCheckinDb();
-  object.checkinDate = reader.readDateTime(offsets[0]);
+  final object = DailyCheckInDb();
+  object.checkInDate = reader.readDateTime(offsets[0]);
   object.createdAt = reader.readDateTime(offsets[1]);
   object.id = id;
   return object;
 }
 
-P _dailyCheckinDbDeserializeProp<P>(
+P _dailyCheckInDbDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -106,42 +106,42 @@ P _dailyCheckinDbDeserializeProp<P>(
   }
 }
 
-Id _dailyCheckinDbGetId(DailyCheckinDb object) {
+Id _dailyCheckInDbGetId(DailyCheckInDb object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _dailyCheckinDbGetLinks(DailyCheckinDb object) {
+List<IsarLinkBase<dynamic>> _dailyCheckInDbGetLinks(DailyCheckInDb object) {
   return [];
 }
 
-void _dailyCheckinDbAttach(
+void _dailyCheckInDbAttach(
   IsarCollection<dynamic> col,
   Id id,
-  DailyCheckinDb object,
+  DailyCheckInDb object,
 ) {
   object.id = id;
 }
 
-extension DailyCheckinDbQueryWhereSort
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QWhere> {
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhere> anyId() {
+extension DailyCheckInDbQueryWhereSort
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QWhere> {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhere> anyCheckinDate() {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhere> anyCheckInDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'checkinDate'),
+        const IndexWhereClause.any(indexName: r'checkInDate'),
       );
     });
   }
 }
 
-extension DailyCheckinDbQueryWhere
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QWhereClause> {
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause> idEqualTo(
+extension DailyCheckInDbQueryWhere
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QWhereClause> {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause> idEqualTo(
     Id id,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -149,7 +149,7 @@ extension DailyCheckinDbQueryWhere
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause> idNotEqualTo(
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause> idNotEqualTo(
     Id id,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -173,7 +173,7 @@ extension DailyCheckinDbQueryWhere
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause> idGreaterThan(
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause> idGreaterThan(
     Id id, {
     bool include = false,
   }) {
@@ -184,7 +184,7 @@ extension DailyCheckinDbQueryWhere
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause> idLessThan(
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause> idLessThan(
     Id id, {
     bool include = false,
   }) {
@@ -195,7 +195,7 @@ extension DailyCheckinDbQueryWhere
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause> idBetween(
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -213,35 +213,35 @@ extension DailyCheckinDbQueryWhere
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause>
-  checkinDateEqualTo(DateTime checkinDate) {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause>
+  checkInDateEqualTo(DateTime checkInDate) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.equalTo(
-          indexName: r'checkinDate',
-          value: [checkinDate],
+          indexName: r'checkInDate',
+          value: [checkInDate],
         ),
       );
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause>
-  checkinDateNotEqualTo(DateTime checkinDate) {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause>
+  checkInDateNotEqualTo(DateTime checkInDate) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'checkinDate',
+                indexName: r'checkInDate',
                 lower: [],
-                upper: [checkinDate],
+                upper: [checkInDate],
                 includeUpper: false,
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'checkinDate',
-                lower: [checkinDate],
+                indexName: r'checkInDate',
+                lower: [checkInDate],
                 includeLower: false,
                 upper: [],
               ),
@@ -250,17 +250,17 @@ extension DailyCheckinDbQueryWhere
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'checkinDate',
-                lower: [checkinDate],
+                indexName: r'checkInDate',
+                lower: [checkInDate],
                 includeLower: false,
                 upper: [],
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'checkinDate',
+                indexName: r'checkInDate',
                 lower: [],
-                upper: [checkinDate],
+                upper: [checkInDate],
                 includeUpper: false,
               ),
             );
@@ -268,13 +268,13 @@ extension DailyCheckinDbQueryWhere
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause>
-  checkinDateGreaterThan(DateTime checkinDate, {bool include = false}) {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause>
+  checkInDateGreaterThan(DateTime checkInDate, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.between(
-          indexName: r'checkinDate',
-          lower: [checkinDate],
+          indexName: r'checkInDate',
+          lower: [checkInDate],
           includeLower: include,
           upper: [],
         ),
@@ -282,34 +282,34 @@ extension DailyCheckinDbQueryWhere
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause>
-  checkinDateLessThan(DateTime checkinDate, {bool include = false}) {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause>
+  checkInDateLessThan(DateTime checkInDate, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.between(
-          indexName: r'checkinDate',
+          indexName: r'checkInDate',
           lower: [],
-          upper: [checkinDate],
+          upper: [checkInDate],
           includeUpper: include,
         ),
       );
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterWhereClause>
-  checkinDateBetween(
-    DateTime lowerCheckinDate,
-    DateTime upperCheckinDate, {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterWhereClause>
+  checkInDateBetween(
+    DateTime lowerCheckInDate,
+    DateTime upperCheckInDate, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.between(
-          indexName: r'checkinDate',
-          lower: [lowerCheckinDate],
+          indexName: r'checkInDate',
+          lower: [lowerCheckInDate],
           includeLower: includeLower,
-          upper: [upperCheckinDate],
+          upper: [upperCheckInDate],
           includeUpper: includeUpper,
         ),
       );
@@ -317,45 +317,45 @@ extension DailyCheckinDbQueryWhere
   }
 }
 
-extension DailyCheckinDbQueryFilter
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QFilterCondition> {
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
-  checkinDateEqualTo(DateTime value) {
+extension DailyCheckInDbQueryFilter
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QFilterCondition> {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
+  checkInDateEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'checkinDate', value: value),
+        FilterCondition.equalTo(property: r'checkInDate', value: value),
       );
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
-  checkinDateGreaterThan(DateTime value, {bool include = false}) {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
+  checkInDateGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'checkinDate',
+          property: r'checkInDate',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
-  checkinDateLessThan(DateTime value, {bool include = false}) {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
+  checkInDateLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'checkinDate',
+          property: r'checkInDate',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
-  checkinDateBetween(
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
+  checkInDateBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
@@ -364,7 +364,7 @@ extension DailyCheckinDbQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'checkinDate',
+          property: r'checkInDate',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -374,7 +374,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
   createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -383,7 +383,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
   createdAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -396,7 +396,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
   createdAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -409,7 +409,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
   createdAtBetween(
     DateTime lower,
     DateTime upper, {
@@ -429,7 +429,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition> idEqualTo(
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition> idEqualTo(
     Id value,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -439,7 +439,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
   idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -452,7 +452,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition>
   idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -465,7 +465,7 @@ extension DailyCheckinDbQueryFilter
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterFilterCondition> idBetween(
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -485,35 +485,35 @@ extension DailyCheckinDbQueryFilter
   }
 }
 
-extension DailyCheckinDbQueryObject
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QFilterCondition> {}
+extension DailyCheckInDbQueryObject
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QFilterCondition> {}
 
-extension DailyCheckinDbQueryLinks
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QFilterCondition> {}
+extension DailyCheckInDbQueryLinks
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QFilterCondition> {}
 
-extension DailyCheckinDbQuerySortBy
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QSortBy> {
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy>
-  sortByCheckinDate() {
+extension DailyCheckInDbQuerySortBy
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QSortBy> {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy>
+  sortByCheckInDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'checkinDate', Sort.asc);
+      return query.addSortBy(r'checkInDate', Sort.asc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy>
-  sortByCheckinDateDesc() {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy>
+  sortByCheckInDateDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'checkinDate', Sort.desc);
+      return query.addSortBy(r'checkInDate', Sort.desc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy> sortByCreatedAt() {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy>
   sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
@@ -521,58 +521,58 @@ extension DailyCheckinDbQuerySortBy
   }
 }
 
-extension DailyCheckinDbQuerySortThenBy
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QSortThenBy> {
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy>
-  thenByCheckinDate() {
+extension DailyCheckInDbQuerySortThenBy
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QSortThenBy> {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy>
+  thenByCheckInDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'checkinDate', Sort.asc);
+      return query.addSortBy(r'checkInDate', Sort.asc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy>
-  thenByCheckinDateDesc() {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy>
+  thenByCheckInDateDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'checkinDate', Sort.desc);
+      return query.addSortBy(r'checkInDate', Sort.desc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy> thenByCreatedAt() {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy>
   thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy> thenById() {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 }
 
-extension DailyCheckinDbQueryWhereDistinct
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QDistinct> {
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QDistinct>
-  distinctByCheckinDate() {
+extension DailyCheckInDbQueryWhereDistinct
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QDistinct> {
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QDistinct>
+  distinctByCheckInDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'checkinDate');
+      return query.addDistinctBy(r'checkInDate');
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DailyCheckinDb, QDistinct>
+  QueryBuilder<DailyCheckInDb, DailyCheckInDb, QDistinct>
   distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
@@ -580,22 +580,22 @@ extension DailyCheckinDbQueryWhereDistinct
   }
 }
 
-extension DailyCheckinDbQueryProperty
-    on QueryBuilder<DailyCheckinDb, DailyCheckinDb, QQueryProperty> {
-  QueryBuilder<DailyCheckinDb, int, QQueryOperations> idProperty() {
+extension DailyCheckInDbQueryProperty
+    on QueryBuilder<DailyCheckInDb, DailyCheckInDb, QQueryProperty> {
+  QueryBuilder<DailyCheckInDb, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DateTime, QQueryOperations>
-  checkinDateProperty() {
+  QueryBuilder<DailyCheckInDb, DateTime, QQueryOperations>
+  checkInDateProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'checkinDate');
+      return query.addPropertyName(r'checkInDate');
     });
   }
 
-  QueryBuilder<DailyCheckinDb, DateTime, QQueryOperations> createdAtProperty() {
+  QueryBuilder<DailyCheckInDb, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });

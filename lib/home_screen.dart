@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserName();
-    _checkDailyCheckin();
+    _checkDailyCheckIn();
   }
 
   Future<void> _loadUserName() async {
@@ -35,17 +35,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _checkDailyCheckin() async {
+  Future<void> _checkDailyCheckIn() async {
     await Future.delayed(const Duration(milliseconds: 500));
     
-    final hasCheckedIn = await CheckinService.hasCheckedInToday();
+    final hasCheckedIn = await CheckInService.hasCheckedInToday();
     
     if (!hasCheckedIn && mounted) {
-      _showCheckinModal();
+      _showCheckInModal();
     }
   }
 
-  void _showCheckinModal() {
+  void _showCheckInModal() {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
         ),
-        child: const DailyCheckinModal(),
+        child: const DailyCheckInModal(),
       ),
     );
   }
@@ -98,8 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.white,
                   size: 24,
                 ),
-                onPressed: _showCheckinModal,
-                tooltip: 'Check-in History',
+                onPressed: _showCheckInModal,
+                tooltip: 'Check-In History',
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
