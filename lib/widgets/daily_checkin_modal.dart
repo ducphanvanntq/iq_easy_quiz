@@ -224,7 +224,7 @@ class _DailyCheckInModalState extends State<DailyCheckInModal> {
                   else
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
@@ -235,6 +235,7 @@ class _DailyCheckInModalState extends State<DailyCheckInModal> {
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
@@ -242,12 +243,17 @@ class _DailyCheckInModalState extends State<DailyCheckInModal> {
                             size: 24,
                           ),
                           const SizedBox(width: 12),
-                          Text(
-                            'Already checked in today!',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.green,
+                          Flexible(
+                            child: Text(
+                              'Already checked in today!',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green,
+                              ),
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
                             ),
                           ),
                         ],
