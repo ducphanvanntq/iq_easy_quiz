@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'home_screen.dart';
+import 'statistics_screen.dart';
 import 'settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
+    const StatisticsScreen(),
     const SettingsScreen(),
   ];
 
@@ -81,6 +83,26 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
                 label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  PhosphorIcons.chartBar(PhosphorIconsStyle.regular),
+                  size: 24,
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primaryColor.withOpacity(0.2), secondaryColor.withOpacity(0.2)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    PhosphorIcons.chartBar(PhosphorIconsStyle.fill),
+                    size: 24,
+                  ),
+                ),
+                label: 'Statistics',
               ),
               BottomNavigationBarItem(
                 icon: Icon(

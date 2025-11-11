@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../services/mission_service.dart';
 import '../database/daily_mission_db.dart';
+import '../quiz_screen.dart';
+import '../data/quiz_categories.dart';
 
 class DailyMissionModal extends StatefulWidget {
   const DailyMissionModal({super.key});
@@ -202,34 +204,91 @@ class _DailyMissionModalState extends State<DailyMissionModal> {
     );
   }
 
+  void _handleMissionTap(DailyMissionDb mission) {
+    if (mission.isCompleted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'This mission is already completed!',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final category = quizCategories.firstWhere(
+      (cat) => cat.id == mission.categoryId,
+      orElse: () => quizCategories.first,
+    );
+
+    Navigator.of(context).pop();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => QuizScreen(
+          categoryId: mission.categoryId,
+          categoryTitle: mission.categoryTitle,
+          difficulty: mission.difficulty,
+          categoryColor: category.color,
+        ),
+      ),
+    );
+  }
+
   Widget _buildMissionItem(DailyMissionDb mission, int number) {
     final difficultyColor = _getDifficultyColor(mission.difficulty);
     final difficultyIcon = _getDifficultyIcon(mission.difficulty);
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: mission.isCompleted
-            ? Colors.green.withOpacity(0.05)
-            : Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _handleMissionTap(mission),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: mission.isCompleted
-              ? Colors.green.withOpacity(0.3)
-              : Colors.grey.shade200,
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
             color: mission.isCompleted
-                ? Colors.green.withOpacity(0.08)
-                : Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+                ? Colors.green.withOpacity(0.05)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: mission.isCompleted
+                  ? Colors.green.withOpacity(0.3)
+                  : Colors.grey.shade200,
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: mission.isCompleted
+                    ? Colors.green.withOpacity(0.08)
+                    : Colors.black.withOpacity(0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
+        child: Row(
         children: [
           Container(
             width: 36,
@@ -342,6 +401,22 @@ class _DailyMissionModalState extends State<DailyMissionModal> {
                           color: Colors.green,
                         ),
                       ),
+                    ] else ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        PhosphorIcons.arrowRight(PhosphorIconsStyle.bold),
+                        size: 12,
+                        color: primaryColor,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        'Tap to start',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: primaryColor,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -349,6 +424,8 @@ class _DailyMissionModalState extends State<DailyMissionModal> {
             ),
           ),
         ],
+      ),
+        ),
       ),
     );
   }
