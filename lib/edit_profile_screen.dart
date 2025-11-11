@@ -118,7 +118,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header with gradient
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(bottom: 40),
@@ -194,7 +193,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
 
-            // Form
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Form(
@@ -212,7 +210,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Name Field
                     TextFormField(
                       controller: _nameController,
                       style: GoogleFonts.poppins(fontSize: 16),
@@ -264,7 +261,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Gender Selector
                     Text(
                       'Gender',
                       style: GoogleFonts.poppins(
@@ -407,7 +403,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Age Dropdown
                     DropdownButtonFormField<int>(
                       value: selectedAge,
                       style: GoogleFonts.poppins(fontSize: 16, color: Colors.black87),
@@ -467,7 +462,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Save Button
                     Container(
                       width: double.infinity,
                       height: 56,

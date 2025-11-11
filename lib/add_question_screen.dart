@@ -16,7 +16,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   int currentStep = 0;
   final PageController _pageController = PageController();
 
-  // Step data
   String? selectedCategory;
   String? selectedCategoryTitle;
   String? selectedDifficulty;
@@ -134,7 +133,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   void _submitQuestion() {
-    // Fake submission - just show success message
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -176,8 +174,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Go back to home screen
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: Text(
               'OK',
@@ -223,7 +221,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       ),
       body: Column(
         children: [
-          // Progress Indicator
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -270,7 +267,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             ),
           ),
           
-          // Content
           Expanded(
             child: PageView(
               controller: _pageController,
@@ -289,7 +285,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
-  // Step 1: Choose Category
   Widget _buildCategoryStep() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -382,7 +377,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
-  // Step 2: Choose Difficulty
   Widget _buildDifficultyStep() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -503,7 +497,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
-  // Step 3: Choose Question Type
   Widget _buildQuestionTypeStep() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -620,7 +613,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
-  // Step 4: Write Question and Answers
   Widget _buildQuestionAnswersStep() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -662,7 +654,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           ),
           const SizedBox(height: 24),
           
-          // Question
           Text(
             'Question',
             style: GoogleFonts.poppins(
@@ -704,7 +695,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           ),
           const SizedBox(height: 24),
           
-          // Answers
           Text(
             'Answer Options',
             style: GoogleFonts.poppins(
@@ -792,7 +782,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
-  // Step 5: Select Correct Answer
   Widget _buildCorrectAnswerStep() {
     final answers = [
       {'label': 'A', 'text': _answer1Controller.text},
@@ -843,7 +832,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           ),
           const SizedBox(height: 24),
           
-          // Display question
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -876,7 +864,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           ),
           const SizedBox(height: 24),
           
-          // Answer options
           ...List.generate(4, (index) {
             final isSelected = selectedCorrectAnswerIndex == index;
             return Padding(
@@ -943,7 +930,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           }),
           const SizedBox(height: 24),
           
-          // Submit button
           Container(
             width: double.infinity,
             height: 56,

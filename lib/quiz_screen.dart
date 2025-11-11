@@ -39,8 +39,7 @@ class _QuizScreenState extends State<QuizScreen> {
   int currentQuestionIndex = 0;
   final PageController _pageController = PageController();
   
-  // Timer variables
-  static const int quizDurationInSeconds = 600; // 10 minutes
+  static const int quizDurationInSeconds = 600;
   int remainingSeconds = quizDurationInSeconds;
   bool isTimerRunning = false;
   late final Stream<int> _timerStream;
@@ -91,7 +90,6 @@ class _QuizScreenState extends State<QuizScreen> {
       isTimerRunning = false;
     });
     
-    // Auto-submit quiz when time is up
     final score = QuizService.calculateScore(
       questions: questions,
       userAnswers: userAnswers,
@@ -120,14 +118,12 @@ class _QuizScreenState extends State<QuizScreen> {
 
       setState(() {
         questions = loadedQuestions;
-        // Shuffle answers for each question
         for (var question in questions) {
           allShuffledAnswers.add(QuizService.shuffleAnswers(question));
         }
         isLoading = false;
       });
       
-      // Start timer after questions are loaded
       _startTimer();
     } catch (e) {
       setState(() {
@@ -167,12 +163,10 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _submitQuiz() {
-    // Stop the timer
     setState(() {
       isTimerRunning = false;
     });
     
-    // Check if user has answered all questions
     if (!QuizService.hasAnsweredAll(
       totalQuestions: questions.length,
       userAnswers: userAnswers,
@@ -181,13 +175,11 @@ class _QuizScreenState extends State<QuizScreen> {
       return;
     }
 
-    // Calculate score
     final score = QuizService.calculateScore(
       questions: questions,
       userAnswers: userAnswers,
     );
 
-    // Save history
     _saveHistory(score).then((_) {
       if (mounted) {
         _showResultDialog(score);
@@ -615,7 +607,6 @@ class _QuizScreenState extends State<QuizScreen> {
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () {
-            // Show confirmation dialog
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
@@ -700,7 +691,6 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
       body: Column(
         children: [
-          // Header with progress
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -727,11 +717,9 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             child: Column(
               children: [
-                // Top row: Progress stats and Submit button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Progress info - Answered questions counter
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -764,7 +752,6 @@ class _QuizScreenState extends State<QuizScreen> {
                         ],
                       ),
                     ),
-                    // Submit button
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -817,7 +804,6 @@ class _QuizScreenState extends State<QuizScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Question number grid (2 rows)
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final itemsPerRow = 5;
@@ -912,7 +898,6 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
 
-          // Question content
           Expanded(
             child: PageView.builder(
               controller: _pageController,
@@ -932,7 +917,6 @@ class _QuizScreenState extends State<QuizScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Question
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
@@ -1006,7 +990,6 @@ class _QuizScreenState extends State<QuizScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // Answers
                       ...List.generate(
                         shuffledAnswers.length,
                         (answerIndex) => _buildAnswerOption(
@@ -1023,7 +1006,6 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
 
-          // Navigation buttons
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(

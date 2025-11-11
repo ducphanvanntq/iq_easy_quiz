@@ -21,7 +21,6 @@ class QuizHistory {
     required this.completedAt,
   });
 
-  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -35,7 +34,6 @@ class QuizHistory {
     };
   }
 
-  // Create from JSON
   factory QuizHistory.fromJson(Map<String, dynamic> json) {
     return QuizHistory(
       id: json['id'] as String,
@@ -49,13 +47,10 @@ class QuizHistory {
     );
   }
 
-  // Get percentage
   double get percentage => (correctAnswers / totalQuestions) * 100;
 
-  // Convert to JSON string
   String toJsonString() => jsonEncode(toJson());
 
-  // Create from JSON string
   static QuizHistory fromJsonString(String jsonString) {
     return QuizHistory.fromJson(jsonDecode(jsonString));
   }

@@ -1,15 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:isar_community/isar.dart';
 import '../models/question_model.dart';
+import '../database/database.dart';
+import '../database/quiz_db.dart';
 
 class QuizService {
   static final Dio _dio = Dio();
 
-  /// Load questions from Open Trivia Database API
-  /// 
-  /// Parameters:
-  /// - [categoryId]: Category ID (or 'any' for all categories)
-  /// - [difficulty]: Difficulty level (easy/medium/hard)
-  /// - [amount]: Number of questions (default: 10)
   static Future<List<Question>> loadQuestions({
     required String categoryId,
     required String difficulty,
@@ -37,12 +34,10 @@ class QuizService {
     }
   }
 
-  /// Shuffle answers for a question
   static List<String> shuffleAnswers(Question question) {
     return question.getAllAnswers();
   }
 
-  /// Calculate score
   static int calculateScore({
     required List<Question> questions,
     required Map<int, String> userAnswers,
@@ -53,7 +48,6 @@ class QuizService {
       final userAnswer = userAnswers[i];
       if (userAnswer != null) {
         final correctAnswer = questions[i].correctAnswer;
-        // Normalize strings for comparison
         final normalizedUser = userAnswer.trim().toLowerCase();
         final normalizedCorrect = correctAnswer.trim().toLowerCase();
         
@@ -66,7 +60,6 @@ class QuizService {
     return score;
   }
 
-  /// Check if user has answered all questions
   static bool hasAnsweredAll({
     required int totalQuestions,
     required Map<int, String> userAnswers,
@@ -74,7 +67,6 @@ class QuizService {
     return userAnswers.length == totalQuestions;
   }
 
-  /// Get unanswered questions indices
   static List<int> getUnansweredQuestions({
     required int totalQuestions,
     required Map<int, String> userAnswers,
@@ -86,6 +78,101 @@ class QuizService {
       }
     }
     return unanswered;
+  }
+
+  static Future<void> saveCustomQuestion({
+    required String categoryId,
+    required String categoryTitle,
+    required String difficulty,
+    required String type,
+    required String question,
+    required String correctAnswer,
+    required List<String> incorrectAnswers,
+    required String createdBy,
+    String status = 'pending',
+  }) async {
+    final isar = await IsarDatabase.instance;
+    
+    final quizDb = QuizDb()
+      ..categoryId = categoryId
+      ..categoryTitle = categoryTitle
+      ..difficulty = difficulty
+      ..type = type
+      ..question = question
+      ..correctAnswer = correctAnswer
+      ..incorrectAnswers = incorrectAnswers
+      ..status = status
+      ..createdAt = DateTime.now()
+      ..createdBy = createdBy;
+
+    await isar.writeTxn(() async {
+      await isar.quizDbs.put(quizDb);
+    });
+  }
+
+  static Future<List<QuizDb>> getAllCustomQuestions() async {
+    final isar = await IsarDatabase.instance;
+    return await isar.quizDbs
+        .where()
+        .sortByCreatedAtDesc()
+        .findAll();
+  }
+
+  static Future<List<QuizDb>> getCustomQuestionsByCategory(String categoryId) async {
+    final isar = await IsarDatabase.instance;
+    return await isar.quizDbs
+        .filter()
+        .categoryIdEqualTo(categoryId)
+        .sortByCreatedAtDesc()
+        .findAll();
+  }
+
+  static Future<List<QuizDb>> getCustomQuestionsByStatus(String status) async {
+    final isar = await IsarDatabase.instance;
+    return await isar.quizDbs
+        .filter()
+        .statusEqualTo(status)
+        .sortByCreatedAtDesc()
+        .findAll();
+  }
+
+  static Future<List<QuizDb>> getPendingQuestions() async {
+    return await getCustomQuestionsByStatus('pending');
+  }
+
+  static Future<List<QuizDb>> getApprovedQuestions() async {
+    return await getCustomQuestionsByStatus('approved');
+  }
+
+  static Future<void> approveQuestion(Id questionId) async {
+    final isar = await IsarDatabase.instance;
+    await isar.writeTxn(() async {
+      final question = await isar.quizDbs.get(questionId);
+      if (question != null) {
+        question.status = 'approved';
+        await isar.quizDbs.put(question);
+      }
+    });
+  }
+
+  static Future<void> deleteCustomQuestion(Id questionId) async {
+    final isar = await IsarDatabase.instance;
+    await isar.writeTxn(() async {
+      await isar.quizDbs.delete(questionId);
+    });
+  }
+
+  static Future<int> getCustomQuestionsCountByStatus(String status) async {
+    final isar = await IsarDatabase.instance;
+    return await isar.quizDbs
+        .filter()
+        .statusEqualTo(status)
+        .count();
+  }
+
+  static Future<int> getTotalCustomQuestionsCount() async {
+    final isar = await IsarDatabase.instance;
+    return await isar.quizDbs.count();
   }
 }
 

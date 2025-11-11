@@ -47,7 +47,6 @@ class Question {
     );
   }
 
-  // Helper method to decode HTML entities
   static String _decodeHtml(String text) {
     return text
         .replaceAll('&quot;', '"')
@@ -63,14 +62,12 @@ class Question {
         .replaceAll('&uuml;', 'ü');
   }
 
-  // Get all answers shuffled
   List<String> getAllAnswers() {
     final allAnswers = [...incorrectAnswers, correctAnswer];
     allAnswers.shuffle();
     return allAnswers;
   }
 
-  // Get the index of correct answer in shuffled list
   int getCorrectAnswerIndex(List<String> shuffledAnswers) {
     return shuffledAnswers.indexOf(correctAnswer);
   }

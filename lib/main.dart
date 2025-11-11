@@ -10,7 +10,6 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // Initialize Isar database
   try {
     await IsarDatabase.instance;
     debugPrint('✅ Isar database initialized successfully');

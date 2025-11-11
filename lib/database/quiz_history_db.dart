@@ -23,7 +23,6 @@ class QuizHistoryDb {
   @Index()
   late DateTime completedAt;
 
-  // Computed property (không lưu vào DB)
   @ignore
   double get percentage => totalQuestions > 0
       ? (correctAnswers / totalQuestions) * 100
