@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'utils/responsive_helper.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -115,10 +116,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
+      body: ResponsiveContainer(
+        maxWidth: 800,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
               width: double.infinity,
               padding: const EdgeInsets.only(bottom: 40),
               decoration: BoxDecoration(
@@ -193,9 +196,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
 
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
+              Padding(
+                padding: ResponsiveHelper.padding(context, mobile: 24, tablet: 32, desktop: 40),
+                child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Text(
                       'Personal Information',
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
+                        fontSize: ResponsiveHelper.fontSize(context, 20),
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
@@ -513,7 +516,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

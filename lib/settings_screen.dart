@@ -6,7 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'welcome_screen.dart';
 import 'edit_profile_screen.dart';
 import 'my_questions_screen.dart';
+import 'notifications_settings_screen.dart';
+import 'privacy_policy_screen.dart';
+import 'terms_conditions_screen.dart';
 import 'services/quiz_service.dart';
+import 'utils/responsive_helper.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -115,12 +119,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final expandedHeight = ResponsiveHelper.responsiveValue(
+      context,
+      mobile: 260.0,
+      tablet: 300.0,
+      desktop: 340.0,
+    );
+    
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 260,
+            expandedHeight: expandedHeight,
             floating: false,
             pinned: true,
             backgroundColor: primaryColor,
@@ -190,7 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Text(
                           userName,
                           style: GoogleFonts.poppins(
-                            fontSize: 20,
+                            fontSize: ResponsiveHelper.fontSize(context, 20),
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -276,8 +287,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+            child: ResponsiveContainer(
+              maxWidth: 800,
+              padding: ResponsiveHelper.padding(context, mobile: 16, tablet: 24, desktop: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -330,8 +342,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Manage notification settings',
                     color: Colors.orange,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Coming soon!')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsSettingsScreen(),
+                        ),
                       );
                     },
                   ),
@@ -361,8 +376,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Read our privacy policy',
                     color: Colors.purple,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Coming soon!')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PrivacyPolicyScreen(),
+                        ),
                       );
                     },
                   ),
@@ -373,8 +391,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'View terms and conditions',
                     color: Colors.blue.shade700,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Coming soon!')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TermsConditionsScreen(),
+                        ),
                       );
                     },
                   ),
@@ -385,12 +406,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Give us 5 stars ⭐',
                     color: Colors.pink,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Thank you for your support! ❤️'),
-                          backgroundColor: Colors.pink,
-                        ),
-                      );
+                      _showRatingDialog();
                     },
                   ),
                   const SizedBox(height: 24),
@@ -551,6 +567,167 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showRatingDialog() {
+    int selectedRating = 0;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          contentPadding: const EdgeInsets.all(32),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.pink, Colors.pink.shade300],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Ionicons.heart,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Rate IQ Easy Quiz',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'How would you rate your experience?',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedRating = index + 1;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        index < selectedRating
+                            ? Ionicons.star
+                            : Ionicons.star_outline,
+                        size: 40,
+                        color: index < selectedRating
+                            ? Colors.amber.shade500
+                            : Colors.grey.shade300,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 24),
+              if (selectedRating > 0) ...[
+                Text(
+                  selectedRating >= 4
+                      ? 'Thank you! ❤️'
+                      : 'Thank you for your feedback!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: selectedRating >= 4 ? Colors.pink : primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Maybe Later',
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: selectedRating > 0
+                        ? () async {
+                            Navigator.pop(context);
+                            
+                            // Save rating
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setInt('userRating', selectedRating);
+                            await prefs.setBool('hasRated', true);
+                            
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      Icon(Ionicons.heart, color: Colors.white),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          selectedRating >= 4
+                                              ? 'Thanks for the $selectedRating stars! We appreciate your support! ❤️'
+                                              : 'Thank you for rating us! We\'ll work on improving.',
+                                          style: GoogleFonts.poppins(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor: Colors.pink,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink,
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      'Submit',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

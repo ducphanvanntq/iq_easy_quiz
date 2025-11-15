@@ -10,6 +10,7 @@ import 'services/checkin_service.dart';
 import 'services/mission_service.dart';
 import 'widgets/daily_checkin_modal.dart';
 import 'widgets/daily_mission_modal.dart';
+import 'utils/responsive_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -88,6 +89,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final expandedHeight = ResponsiveHelper.responsiveValue(
+      context,
+      mobile: 100.0,
+      tablet: 120.0,
+      desktop: 140.0,
+    );
+    
+    final gridCrossAxisCount = ResponsiveHelper.gridCrossAxisCount(context);
+    
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       floatingActionButton: FloatingActionButton.extended(
@@ -115,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 100,
+            expandedHeight: expandedHeight,
             floating: false,
             pinned: true,
             backgroundColor: primaryColor,
@@ -203,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Text(
                                 'Hello, $userName!',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 22,
+                                  fontSize: ResponsiveHelper.fontSize(context, 22),
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -229,13 +239,28 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.all(16.0),
+            padding: ResponsiveHelper.padding(context, mobile: 16, tablet: 24, desktop: 32),
             sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.9,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: gridCrossAxisCount,
+                childAspectRatio: ResponsiveHelper.responsiveValue(
+                  context,
+                  mobile: 0.9,
+                  tablet: 1.0,
+                  desktop: 1.1,
+                ),
+                crossAxisSpacing: ResponsiveHelper.responsiveValue(
+                  context,
+                  mobile: 12,
+                  tablet: 16,
+                  desktop: 20,
+                ),
+                mainAxisSpacing: ResponsiveHelper.responsiveValue(
+                  context,
+                  mobile: 12,
+                  tablet: 16,
+                  desktop: 20,
+                ),
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -530,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: ResponsiveHelper.borderRadius(context, 16),
           boxShadow: [
             BoxShadow(
               color: category.color.withOpacity(0.15),
@@ -543,25 +568,35 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(ResponsiveHelper.responsiveValue(
+                context,
+                mobile: 14.0,
+                tablet: 18.0,
+                desktop: 22.0,
+              )),
               decoration: BoxDecoration(
                 color: category.color.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 category.icon,
-                size: 40,
+                size: ResponsiveHelper.iconSize(context, 40),
                 color: category.color,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: ResponsiveHelper.responsiveValue(
+              context,
+              mobile: 12.0,
+              tablet: 14.0,
+              desktop: 16.0,
+            )),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 category.title,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: ResponsiveHelper.fontSize(context, 14),
                   fontWeight: FontWeight.bold,
                   color: Colors.grey.shade800,
                 ),
@@ -576,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 category.description,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 10,
+                  fontSize: ResponsiveHelper.fontSize(context, 10),
                   color: Colors.grey.shade500,
                 ),
                 maxLines: 1,

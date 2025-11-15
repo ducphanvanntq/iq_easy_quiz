@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'main_screen.dart';
+import 'utils/responsive_helper.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -79,9 +80,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
         ),
         child: SafeArea(
           child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: FadeTransition(
+            child: ResponsiveContainer(
+              maxWidth: 600,
+              child: SingleChildScrollView(
+                padding: ResponsiveHelper.padding(context, mobile: 24, tablet: 32, desktop: 40),
+                child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: Form(
                   key: _formKey,
@@ -457,6 +460,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                 ),
               ),
+            ),
             ),
           ),
         ),
